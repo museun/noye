@@ -1,0 +1,5 @@
+**/*.env
+noye.toml
+*.txt
+/target
+**/*.rs.bk
