@@ -3,3 +3,4 @@ noye.toml
 *.txt
 /target
 **/*.rs.bk
+**/*.json
