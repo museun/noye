@@ -32,7 +32,7 @@ pub fn template(input: TokenStream) -> TokenStream {
 
     let matches = variants.clone().into_iter()
         .map(|(var, fields)| (var, fields.into_iter().filter_map(|v| v.ident)))
-        .map(|(var, fields)| {            
+        .map(|(var, fields)| {
             let args = fields.clone().map(|v| {
                 let k = v.to_string();
                 quote! { with(#k, #v) }

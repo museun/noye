@@ -39,8 +39,6 @@ pub struct Dispatcher {
 }
 
 impl Dispatcher {
-    // TODO middleware for 'scope' rejection
-
     /// Add a command to the dispatcher
     ///
     /// # Description
