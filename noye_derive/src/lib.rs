@@ -32,8 +32,7 @@ pub fn template(input: TokenStream) -> TokenStream {
 
     let matches = variants.clone().into_iter()
         .map(|(var, fields)| (var, fields.into_iter().filter_map(|v| v.ident)))
-        .map(|(var, fields)| {
-            let name = var.to_string();
+        .map(|(var, fields)| {            
             let args = fields.clone().map(|v| {
                 let k = v.to_string();
                 quote! { with(#k, #v) }
@@ -81,9 +80,6 @@ pub fn template(input: TokenStream) -> TokenStream {
     };
     ast.into()
 }
-
-type List<T> = syn::punctuated::Punctuated<T, syn::token::Comma>;
-type Variants = Vec<(syn::Ident, Vec<syn::Field>)>;
 
 fn get_variants(
     variants: impl Iterator<Item = syn::Variant>,
