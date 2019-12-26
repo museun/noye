@@ -1,0 +1,13 @@
+[package]
+name = "noye_derive"
+version = "0.1.0"
+authors = ["museun <museun@outlook.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.2"
+syn = "1.0.11"
+heck = "0.3.1"

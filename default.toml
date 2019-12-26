@@ -1,0 +1,57 @@
+# this is a comment
+# how to place arrays on multiple lines:
+# single_line = [ "foo", "bar" ]
+# multi_line = [
+#     "foo",
+#     "bar"
+# ]
+
+# the log level to use.
+# available levels: trace, debug, info, warn, error
+log_level = "warn"
+
+# the configuration for the irc connection
+[irc_config]
+# the irc server address
+address = "irc.quakenet.org"
+
+# the irc server port
+port = 6667
+
+# the nickname of the bot
+nick = "noye"
+
+# the username of the bot
+user = "noye"
+
+# the realname of the bot
+real = "noye in rust!"
+
+# people who can do admin commands
+owners = [ "museun" ]
+
+# the channels to join
+channels = [ "#museun" ]
+
+# username for Q
+q_name = "!! PLEASE REPLACE THIS !!"
+
+# password for Q
+q_pass = "!! PLEASE REPLACE THIS !!"
+
+# configuration for the runner
+[restart_config]
+address = "localhost:12345"
+
+# the configuration for youtube
+[modules_config.youtube]
+api_key = '!! PLEASE REPLACE THIS !!'
+
+# the configuration for google drive
+[modules_config.gdrive]
+api_key = '!! PLEASE REPLACE THIS !!'
+
+# the configuration for link size
+[modules_config.link_size]
+# 10 megabytes (number of bytes, so 10*1024*1024)
+size_limit = 10485760 

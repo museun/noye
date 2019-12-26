@@ -1,0 +1,63 @@
+[youtube]
+# channel  -- channel this video is from
+# duration -- how long the video is (hh:mm:ss format, where hh is optional)
+# id       -- the id of the video
+# title    -- the title of the video
+# ts       -- the timestamp of the video, if provided (?t=1m42s, ?t=42)
+# views    -- how many views this video has
+video = "${title} | ${channel} · ${duration} · ${views} | https://youtu.be/${id}${ts}"
+
+# channel  -- channel this video is from
+# id       -- the id of the video
+# title    -- the title of the video
+# ts       -- the timestamp of the video, if provided (?t=1m42s, ?t=42)
+# viewers  -- how many active viewers there are
+live = "(LIVE): ${title} | ${channel} · ${viewers} watching | https://youtu.be/${id}${ts}"
+
+# channel  -- channel this video is from
+# id       -- the id of the video
+# start    -- the scheduled start time (UTC)
+# title    -- the title of the video
+upcoming = "(Upcoming: ${start}) ${title} | ${channel} | https://youtu.be/${id}"
+
+# id       -- the id of the channel
+# title    -- name of the channel
+# videos   -- how many videos this channel has
+# views    -- total number views of this channel
+channel = "${title} | ${videos} videos. ${views} views | https://youtube.com/channel/${id}"
+
+[vimeo]
+# duration -- the length of the video
+# fps      -- the fps of the video
+# height   -- the height of the video
+# id       -- the video id
+# owner    -- the owner of the video
+# title    -- the title of the video
+# width    -- the width of the video
+video = "${title} | ${width}x${height} @ ${fps}fps · ${duration} · ${owner} | https://vimeo.com/${id}"
+
+[gdrive]
+# title    -- the title of the video
+# created  -- when it was created
+# size     -- how large the video size
+# width    -- the width of the video
+# height   -- the height of the video
+# duration -- the length of the video
+video = "[${size}] ${title} | ${width}x${height} · ${duration}. created at ${created} ago"
+
+[link_size]
+# size     -- size of the file
+single = "that file is kind of big: ${size}"
+
+# files    -- file index + file size
+many = "some of those are kind of big: ${files}"
+
+[instagram]
+# display  -- display name
+# name     -- instagram name
+post = "${display} (${name})"
+
+# when someone tries to use a command that they cannot
+# e.g. !restart
+[user_error]
+not_owner = "you cannot do that"
