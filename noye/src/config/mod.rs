@@ -96,9 +96,12 @@ impl Config {
             if this.irc_config.q_name == REPLACE_THIS || this.irc_config.q_pass == REPLACE_THIS {
                 return Err(LoadError::FixQConfig);
             }
-            // TODO verify macro
+
             if this.modules_config.youtube.api_key == REPLACE_THIS {
                 return Err(LoadError::ApiKey("youtube"));
+            }
+            if this.modules_config.gdrive.api_key == REPLACE_THIS {
+                return Err(LoadError::ApiKey("gdrive"));
             }
             Ok(this)
         }
