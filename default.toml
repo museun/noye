@@ -55,3 +55,7 @@ api_key = '!! PLEASE REPLACE THIS !!'
 [modules_config.link_size]
 # 10 megabytes (number of bytes, so 10*1024*1024)
 size_limit = 10485760 
+
+# disabled modules configuration
+[disabled_modules.disabled]
+disabled = []

@@ -25,10 +25,10 @@ enum Command {
 impl Command {
     fn parse() -> Command {
         match std::env::args().nth(1).as_ref().map(|s| s.as_str()) {
-            Some("run") => Command::Run,
+            Some("run") | None => Command::Run,
             Some("default-config") => Command::DefaultConfig,
             Some("default-templates") => Command::DefaultTemplates,
-            Some("help") | None | _ => Command::Help,
+            Some("help") | _ => Command::Help,
         }
     }
 
@@ -52,8 +52,10 @@ impl Command {
 }
 
 fn main() -> anyhow::Result<()> {
-    flexi_logger::Logger::with_env_or_str("noye=info")
+    flexi_logger::Logger::with_env_or_str("noye=trace")
         .log_to_file()
+        .o_append(true)
+        .duplicate_to_stderr(flexi_logger::Duplicate::Warn)
         .start()
         .unwrap();
 
