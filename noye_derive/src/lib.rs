@@ -1,11 +1,9 @@
-#![cfg_attr(debug_assertions, allow(dead_code, unused_variables))]
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::*;
 
-// TODO report errors at the right span
 #[proc_macro_derive(Template, attributes(parent))]
 pub fn template(input: TokenStream) -> TokenStream {
     let derive_input = parse_macro_input!(input as DeriveInput);
@@ -64,18 +62,14 @@ pub fn template(input: TokenStream) -> TokenStream {
                      #(#matches),*
                 }
             }
-            fn name() -> &'static str {
-                #name
-            }
+            fn name() -> &'static str { #name }
             fn variant(&self) -> &'static str {
                 use #ident::*;
                 match self {
                     #(#names),*
                 }
             }
-            fn parent() -> &'static str {
-                #parent
-            }
+            fn parent() -> &'static str { #parent }
         }
     };
     ast.into()
