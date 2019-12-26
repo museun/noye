@@ -43,21 +43,59 @@ impl Command {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    flexi_logger::Logger::with_env_or_str("noye=trace")
-        .log_to_file()
-        .o_append(true)
-        .duplicate_to_stderr(flexi_logger::Duplicate::Warn)
-        .start()
-        .unwrap();
+fn init_logger(level: config::LogLevel) -> anyhow::Result<()> {
+    use fern::colors::{Color, ColoredLevelConfig};
+    let level: log::LevelFilter = level.into();
+    let colors = ColoredLevelConfig::new()
+        .trace(Color::BrightBlack)
+        .debug(Color::White)
+        .info(Color::Green)
+        .warn(Color::BrightYellow)
+        .error(Color::BrightRed);
 
+    let stdout = fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "[{} {}][{}] {}",
+                chrono::Utc::now().format("%F %H:%M:%S%.3f"),
+                format!("{: >5}", colors.color(record.level())),
+                record.target(),
+                message,
+            ))
+        })
+        .level_for("noye", level)
+        .chain(std::io::stderr());
+
+    let log_file = fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "{} {} {} | {}",
+                chrono::Utc::now().format("%F %H:%M:%S%.3f%:z"),
+                record.level(),
+                record.target(),
+                message,
+            ))
+        })
+        .level_for("noye", log::LevelFilter::Trace)
+        .chain(fern::log_file("noye.log")?);
+
+    fern::Dispatch::new()
+        .chain(stdout)
+        .chain(log_file)
+        .apply()?;
+
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
     Command::parse().handle();
 
     let mut runtime = tokio::runtime::Runtime::new().unwrap();
-    runtime.block_on(async move {
-        let config = config::Config::load().await?;
-        let config::Irc { address, port, .. } = &config.irc_config;
+    let config = runtime.block_on(async move { config::Config::load().await })?;
+    init_logger(config.log_level)?;
 
+    runtime.block_on(async move {
+        let config::Irc { address, port, .. } = &config.irc_config;
         let client = irc::Client::connect((address.as_str(), *port)).await?;
         bot::Bot::create(config, client).run_loop().await
     })

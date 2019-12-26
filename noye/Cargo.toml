@@ -11,7 +11,7 @@ noye_derive = { path = "../noye_derive" }
 anyhow = "1.0.26"
 chrono = { version = "0.4.10", features = [ "serde" ] }
 escaper = "0.1.0"
-flexi_logger = "0.14.5"
+fern = { version = "0.5.9", features = [ "colored" ] }
 futures = "0.3.1"
 http = "0.2.0"
 log = "0.4.8"
@@ -20,8 +20,9 @@ once_cell = "1.2.0"
 regex = "1.3.1"
 serde = { version = "1.0.104", features = [ "derive" ] }
 toml = { version = "0.5.5", features = [ "preserve_order" ] }
+
 # TODO switch to stable soon (tm)
-reqwest = { git = "https://github.com/seanmonstar/reqwest", branch = "release-0.10.0", features = ["json"] }
+reqwest = { git = "https://github.com/seanmonstar/reqwest", branch = "release-0.10.0", features = [ "json" ] }
 
 [dependencies.tokio]
 version = "0.2.6"
@@ -44,6 +45,5 @@ features = [
 verbose_test = []
 
 [dev-dependencies]
-flexi_logger = "0.14.5"
 tokio-test = "0.2.0"
-escaper = "0.1.0"
+fern = { version = "0.5.9", features = [ "colored" ] }
