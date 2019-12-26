@@ -45,6 +45,7 @@ impl Response {
         }
     }
 
+    /// Say this mesage to this context
     pub fn say(context: Context, msg: impl std::fmt::Display) -> Self {
         match context.target() {
             Some(Target::Channel(target)) => Self::raw(format!("PRIVMSG {} :{}", target, msg)),
@@ -66,6 +67,7 @@ impl Response {
         Self::raw(format!("PART {}", channel))
     }
 
+    /// Changes the nickname
     pub fn nick(nick: impl std::fmt::Display) -> Self {
         Self::raw(format!("NICK {}", nick))
     }
