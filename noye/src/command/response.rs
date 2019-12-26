@@ -37,11 +37,7 @@ impl Response {
                 target,
                 msg
             )),
-            Some(Target::Private(target)) => {
-                // this is wrong
-                // TODO why is this wrong?
-                Self::raw(format!("PRIVMSG {} :{}", target, msg))
-            }
+            Some(Target::Private(target)) => Self::raw(format!("PRIVMSG {} :{}", target, msg)),
             None => {
                 log::warn!("cannot reply to a message without a target");
                 Response::empty()
@@ -52,11 +48,7 @@ impl Response {
     pub fn say(context: Context, msg: impl std::fmt::Display) -> Self {
         match context.target() {
             Some(Target::Channel(target)) => Self::raw(format!("PRIVMSG {} :{}", target, msg)),
-            Some(Target::Private(target)) => {
-                // this is wrong
-                // TODO why is this wrong?
-                Self::raw(format!("PRIVMSG {} :{}", target, msg))
-            }
+            Some(Target::Private(target)) => Self::raw(format!("PRIVMSG {} :{}", target, msg)),
             None => {
                 log::warn!("cannot reply to a message without a target");
                 Response::empty()
