@@ -11,9 +11,6 @@ pub use log_level::LogLevel;
 mod irc;
 pub use irc::Irc;
 
-mod disabled;
-pub use disabled::{Channel, DisabledModules, Module};
-
 mod modules;
 pub use modules::{GDrive, LinkSize, Modules, Youtube};
 
@@ -68,8 +65,6 @@ pub struct Config {
     pub restart_config: Restart,
     /// Configuration for motules
     pub modules_config: Modules,
-    /// Disabled modules on a per channel basis
-    pub disabled_modules: DisabledModules,
 }
 
 impl Config {

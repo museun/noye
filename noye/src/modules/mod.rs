@@ -54,6 +54,7 @@ trait Registry {
 
 // TODO keep track of whats added
 struct Module {
+    #[allow(dead_code)]
     name: &'static str,
     registry: Box<dyn Registry>,
 }
@@ -80,14 +81,13 @@ import_modules!(
     instagram;
 );
 
-pub fn load_modules(config: &Config, dispatcher: &mut Dispatcher) {
-    use crate::config::{Channel, Module};
-    let disabled_modules = &config.disabled_modules;
-    for module in available_modules().iter() {
-        if disabled_modules.check(Channel("*"), Module(module.name)) {
-            log::info!("disabling module '{}' globally", module.name);
-            continue;
-        }
+pub fn load_modules(_config: &Config, dispatcher: &mut Dispatcher) {
+    for module in available_modules() {
+        // TODO check for disabled modules
+        // if disabled_modules.check(Channel("*"), Module(module.name)) {
+        //     log::info!("disabling module '{}' globally", module.name);
+        //     continue;
+        // }
         module.registry.register(dispatcher);
     }
 }
