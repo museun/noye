@@ -24,7 +24,7 @@ static NAME_REGEX: Lazy<regex::Regex> =
 
 async fn hear_instagram(context: Context) -> impl IntoResponse {
     let iter = context.matches().get_many("id")?;
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
     let ok = concurrent_for_each("instgram", None, iter, |id| {
         let client = client.clone();
         async move { fetch_info(&client, id).await }
@@ -35,17 +35,13 @@ async fn hear_instagram(context: Context) -> impl IntoResponse {
     Ok(ok)
 }
 
-async fn fetch_info<C>(client: &surf::Client<C>, id: &str) -> anyhow::Result<Output>
-where
-    C: surf::middleware::HttpClient,
-{
+async fn fetch_info(client: &reqwest::Client, id: &str) -> anyhow::Result<Output> {
     let url = format!("https://www.instagram.com/p/{}/", id);
     let ua = &[(
         "User-Agent",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/71.0", // TODO don't spoof firefox
     )];
     let body = crate::http::get_body(&client, &url, ua).await?;
-    let body = std::str::from_utf8(&body)?;
     get_title_and_name(&id, &body)
         .map(|(display, name)| Output::Post { name, display })
         .ok_or_else(|| anyhow::anyhow!("cannot get display info"))

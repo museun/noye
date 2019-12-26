@@ -26,7 +26,7 @@ enum Output {
 async fn hear_vimeo(context: Context) -> impl IntoResponse {
     let vids = context.matches().get_many("vid")?;
 
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
     let vec = concurrent_for_each("vimeo", None, vids, |vid| {
         let client = client.clone();
         async move { lookup(&client, vid).await }
@@ -38,10 +38,7 @@ async fn hear_vimeo(context: Context) -> impl IntoResponse {
     Ok(vec)
 }
 
-async fn lookup<C>(client: &surf::Client<C>, vid: &str) -> anyhow::Result<Output>
-where
-    C: surf::middleware::HttpClient,
-{
+async fn lookup(client: &reqwest::Client, vid: &str) -> anyhow::Result<Output> {
     #[derive(Debug, serde::Deserialize)]
     struct Response {
         video: Video,

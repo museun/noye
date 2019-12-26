@@ -43,7 +43,7 @@ async fn link_size(context: Context) -> impl IntoResponse {
 }
 
 async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> {
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
 
     let fut = concurrent_for_each(
         "link_size",
@@ -73,14 +73,12 @@ async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> 
     sizes
 }
 
-async fn get_size<C>(client: &surf::Client<C>, link: &str) -> anyhow::Result<u64>
-where
-    C: surf::middleware::HttpClient,
-{
+async fn get_size(client: &reqwest::Client, link: &str) -> anyhow::Result<u64> {
     let resp = http::head(&client, link).await?;
     let size = resp
-        .header("Content-Length")
-        .and_then(|header| header.parse::<u64>().ok())
+        .headers()
+        .get("Content-Length")
+        .and_then(|header| header.to_str().ok()?.parse::<u64>().ok())
         .ok_or_else(|| anyhow::anyhow!("cannot get valid Content-Length header"))?;
     Ok(size)
 }

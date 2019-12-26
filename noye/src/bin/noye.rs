@@ -53,7 +53,6 @@ fn main() -> anyhow::Result<()> {
 
     Command::parse().handle();
 
-    // TODO the bot should be able to hand out LocalSets (via context?)
     let mut runtime = tokio::runtime::Runtime::new().unwrap();
     runtime.block_on(async move {
         let config = config::Config::load().await?;

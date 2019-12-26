@@ -1,58 +1,56 @@
-#![cfg_attr(debug_assertions, allow(dead_code,))]
+use futures::prelude::*;
 use std::collections::HashMap;
 
 /// so no query-strings can be used with get_json
 #[derive(serde::Serialize)]
 pub struct NoQuery;
 
-pub async fn get_body<C>(
-    client: &surf::Client<C>,
+pub async fn get_body(
+    client: &reqwest::Client,
     url: &str,
     headers: &[(&'static str, &str)],
-) -> anyhow::Result<Vec<u8>>
-where
-    C: surf::middleware::HttpClient,
-{
+) -> anyhow::Result<String> {
     let mut req = client.get(url);
-    for (k, v) in headers {
-        req = req.set_header(k, v);
+    for &(k, v) in headers {
+        req = req.header(k, v);
     }
-    req.recv_bytes()
-        .await
+    client
+        .execute(req.build()?)
+        .and_then(|body| async move { body.text().await })
         .map_err(|err| anyhow::anyhow!("cannot get url '{}': {}", url, err))
+        .await
 }
 
-pub async fn get_json<'a, T, C, Q>(
-    client: &surf::Client<C>,
+pub async fn get_json<'a, T, Q>(
+    client: &reqwest::Client,
     url: &'a str,
     query: &'a Q,
     headers: &[(&'static str, &str)],
 ) -> anyhow::Result<T>
 where
     for<'de> T: serde::Deserialize<'de>,
-    C: surf::middleware::HttpClient,
     Q: serde::Serialize + 'a,
 {
     let mut req = client.get(url);
     if let Some(query) = query.into() {
-        req = req.set_query(query).unwrap();
+        req = req.query(query);
     }
-    for (k, v) in headers {
-        req = req.set_header(k, v);
+    for &(k, v) in headers {
+        req = req.header(k, v);
     }
-    req.recv_json()
-        .await
+    client
+        .execute(req.build()?)
+        .and_then(|body| async move { body.json().await })
         .map_err(|err| anyhow::anyhow!("cannot get url '{}': {}", url, err))
+        .await
 }
 
-pub async fn head<C>(client: &surf::Client<C>, url: &str) -> anyhow::Result<surf::Response>
-where
-    C: surf::middleware::HttpClient,
-{
+pub async fn head(client: &reqwest::Client, url: &str) -> anyhow::Result<reqwest::Response> {
+    let req = client.head(url).build()?;
     client
-        .head(url)
-        .await
+        .execute(req)
         .map_err(|err| anyhow::anyhow!("failed to do HEAD on {}: {}", url, err))
+        .await
 }
 
 pub struct Url {

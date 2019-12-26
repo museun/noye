@@ -25,7 +25,7 @@ async fn hear_gdrive(context: Context) -> impl IntoResponse {
     };
 
     let ids = context.matches().get_many("id1")?;
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
 
     let ok = concurrent_for_each("gdrive", None, ids, |id| {
         let client = client.clone();
@@ -44,10 +44,7 @@ struct Query<'a> {
     key: &'a str,
 }
 
-async fn lookup<C>(client: &surf::Client<C>, id: &str, query: Query<'_>) -> anyhow::Result<Output>
-where
-    C: surf::middleware::HttpClient,
-{
+async fn lookup(client: &reqwest::Client, id: &str, query: Query<'_>) -> anyhow::Result<Output> {
     let url = format!("https://www.googleapis.com/drive/v2/files/{}", id);
     let item: Item = crate::http::get_json(client, &url, &query, &[]).await?;
 

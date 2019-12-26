@@ -32,7 +32,7 @@ async fn hear_video(context: Context) -> impl IntoResponse {
 
     let pairs = context.data()?.split(' ').flat_map(find_vid_ts);
 
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
     let output = concurrent_for_each("youtube", None, pairs, |(id, ts)| {
         let client = client.clone();
         async move {
@@ -52,7 +52,7 @@ async fn hear_channel(context: Context) -> impl IntoResponse {
 
     let iter = context.matches().gather(&["channel", "user"])?;
 
-    let client = std::sync::Arc::new(surf::Client::new());
+    let client = std::sync::Arc::new(reqwest::Client::new());
     let output = concurrent_for_each("youtube", None, iter, |cid| {
         let client = client.clone();
         async move {
@@ -65,16 +65,13 @@ async fn hear_channel(context: Context) -> impl IntoResponse {
     Ok(output.collect::<Vec<_>>().await)
 }
 
-async fn lookup<C>(
-    client: &surf::Client<C>,
+async fn lookup(
+    client: &reqwest::Client,
     id: &str,
     base: &str,
     part: &str,
     fields: &str,
-) -> anyhow::Result<Item>
-where
-    C: surf::middleware::HttpClient,
-{
+) -> anyhow::Result<Item> {
     #[derive(serde::Serialize)]
     struct Query<'a> {
         id: &'a str,
