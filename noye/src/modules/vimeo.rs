@@ -1,4 +1,4 @@
-use super::prelude::*;
+use crate::bot::prelude::*;
 use futures::prelude::*;
 
 registry!("vimeo" => {

@@ -1,3 +1,4 @@
+use crate::modules;
 use prelude::*;
 use std::sync::Arc;
 
@@ -75,5 +76,3 @@ pub mod prelude;
 
 mod template;
 pub use template::Template;
-
-mod modules;

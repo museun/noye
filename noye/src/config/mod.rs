@@ -28,7 +28,7 @@ pub trait ApiKey {
     fn get_key() -> &'static str;
 }
 
-/// Generate an static, lazy api from the environment
+/// Generate a static, lazy [`ApiKey`](./trait.ApiKey.html) impl which loads from the environment
 ///
 /// Use `get_api_key() -> Option<Arc<String>>` to get it
 ///
