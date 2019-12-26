@@ -1,6 +1,7 @@
 **/*.env
 noye.toml
 *.txt
+!LICENSE.txt
 /target
 **/*.rs.bk
 **/*.json
