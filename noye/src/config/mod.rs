@@ -111,7 +111,7 @@ impl Config {
                 log::trace!("loading keys from the configuration");
                 ok.load_keys_from_config();
                 log::trace!("loaded keys from the configuration");
-                Ok(ok)
+                return Ok(ok);
             }
             Err(LoadError::NotFound) => {
                 log::warn!(
@@ -119,26 +119,23 @@ impl Config {
                     CONFIG_FILE
                 );
                 tokio::fs::write(CONFIG_FILE, DEFAULT_CONFIG).await?;
-                std::process::exit(1);
             }
             Err(LoadError::InvalidSyntax(inner)) => {
                 log::error!("invalid configuration file, please check it: {}", inner);
-                std::process::exit(1);
             }
             Err(LoadError::ApiKey(module)) => {
                 log::error!(
                     "the api_key for 'modules_config.{}' should be replaced (empty if you don't want to use it)",
                     module
                 );
-                std::process::exit(1);
             }
             Err(LoadError::FixQConfig) => {
                 log::error!(
                     "q_name and q_pass should be replaced (empty if you don't want to auth)"
                 );
-                std::process::exit(1);
             }
         }
+        std::process::exit(1);
     }
 
     fn load_keys_from_config(&self) {
