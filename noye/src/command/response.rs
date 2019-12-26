@@ -30,9 +30,13 @@ impl Response {
 
     /// Reply to this context with this message
     pub fn reply(context: Context, msg: impl std::fmt::Display) -> Self {
-        // TODO this needs to prefix the message
         match context.target() {
-            Some(Target::Channel(target)) => Self::raw(format!("PRIVMSG {} :{}", target, msg)),
+            Some(Target::Channel(target)) => Self::raw(format!(
+                "PRIVMSG {} :{}: {}",
+                context.nick().expect("nick to be attached to message"),
+                target,
+                msg
+            )),
             Some(Target::Private(target)) => {
                 // this is wrong
                 // TODO why is this wrong?
