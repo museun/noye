@@ -5,14 +5,14 @@ noye. an irc bot
 
 // TODO use time 0.2 instead of chrono
 
-/// The configuration module
+/// Configuration
 #[macro_use]
 pub mod config;
 
-/// This bot module
+/// Bot types
 pub mod bot;
 
-/// The IRC module
+/// IRC client and types
 pub mod irc;
 
 #[doc(hidden)]
@@ -24,4 +24,7 @@ pub mod matches;
 mod de;
 mod http;
 
+/// Formatting utilities
 pub mod format;
+
+mod modules;
