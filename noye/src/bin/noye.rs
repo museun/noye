@@ -34,20 +34,12 @@ impl Command {
 
     fn handle(self) {
         match self {
-            Command::Run => (),
-            Command::DefaultConfig => {
-                config::Config::print_default();
-                std::process::exit(0);
-            }
-            Command::DefaultTemplates => {
-                config::Config::print_templates();
-                std::process::exit(0);
-            }
-            Command::Help => {
-                println!("{}", USAGE);
-                std::process::exit(0);
-            }
-        }
+            Command::Run => return,
+            Command::DefaultConfig => config::Config::print_default(),
+            Command::DefaultTemplates => config::Config::print_templates(),
+            Command::Help => println!("{}", USAGE),
+        };
+        std::process::exit(0);
     }
 }
 
