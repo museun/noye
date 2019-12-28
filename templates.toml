@@ -61,3 +61,7 @@ post = "${display} (${name})"
 # e.g. !restart
 [user_error]
 not_owner = "you cannot do that"
+
+[uptime]
+# uptime   -- how long the bot has been running
+uptime = "I've been running for ${uptime}"

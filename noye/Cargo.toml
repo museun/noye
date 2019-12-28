@@ -46,4 +46,4 @@ verbose_test = []
 
 [dev-dependencies]
 tokio-test = "0.2.0"
-fern = { version = "0.5.9", features = [ "colored" ] }
+flexi_logger = "0.14.5"

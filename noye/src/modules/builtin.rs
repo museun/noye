@@ -69,7 +69,14 @@ async fn reclaim(context: Context) -> impl IntoResponse {
 }
 
 async fn uptime(_: Context) -> impl IntoResponse {
-    START.elapsed().as_readable_time()
+    #[derive(Template, Debug)]
+    #[parent("uptime")]
+    enum Output {
+        Uptime { uptime: String },
+    }
+    Output::Uptime {
+        uptime: START.elapsed().as_readable_time(),
+    }
 }
 
 async fn restart(ctx: Context) -> impl IntoResponse {

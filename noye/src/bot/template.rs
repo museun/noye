@@ -75,8 +75,10 @@ impl Default for Templates {
 }
 
 impl Templates {
-    // this is in the wrong directory..
+    #[cfg(not(test))]
     const TEMPLATE_FILE: &'static str = "./templates.toml";
+    #[cfg(test)]
+    const TEMPLATE_FILE: &'static str = "../templates.toml";
 
     fn new() -> Self {
         let mut this = Self {

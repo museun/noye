@@ -1,9 +1,8 @@
+use crate::{DEFAULT_CONFIG, DEFAULT_TEMPLATES};
+
 use futures::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-static DEFAULT_CONFIG: &str = include_str!("../../../default.toml");
-static DEFAULT_TEMPLATES: &str = include_str!("../../../templates.toml");
 
 mod log_level;
 pub use log_level::LogLevel;
