@@ -90,6 +90,8 @@ impl Dispatcher {
             passives,
             ..
         } = self;
+        
+        let (rx,tx) = tokio::sync::mpsc::channel::<String>(32);
 
         let context = Context::new(message, config);
         let mut set = FuturesOrdered::new();
