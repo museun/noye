@@ -24,8 +24,7 @@ reqwest = { version = "0.10.0", features = [ "json" ] }
 
 [dependencies.tokio]
 version = "0.2.6"
-features = [
-    "blocking",
+features = [    
     "dns",
     "fs",
     "io-driver",
@@ -38,9 +37,6 @@ features = [
     "stream",
     "sync",    
 ]
-
-[features]
-verbose_test = []
 
 [dev-dependencies]
 tokio-test = "0.2.0"
