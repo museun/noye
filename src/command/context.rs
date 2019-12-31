@@ -5,8 +5,17 @@ use crate::{config::Config, matches::Matches};
 use std::sync::Arc;
 
 pub struct Command<'a> {
-    pub command: &'a str,
-    pub args: Option<&'a str>,
+    command: &'a str,
+    args: Option<&'a str>,
+}
+impl<'a> Command<'a> {
+    pub fn command(&self) -> &'a str {
+        self.command
+    }
+    pub fn args(&self) -> anyhow::Result<&'a str> {
+        self.args
+            .ok_or_else(|| anyhow::anyhow!("no args found for: {}", self.command))
+    }
 }
 
 /// Handler context passed to each running handler
@@ -61,58 +70,71 @@ impl Context {
         &self.event
     }
 
+    pub(crate) fn kind(&self) -> Box<str> {
+        self.kind.name()
+    }
+
     pub fn target(&self) -> Option<Target<'_>> {
         self.message.target()
     }
 
-    pub fn target_channel(&self) -> Option<&str> {
-        match self.message.target()? {
-            Target::Channel(s) => Some(s),
-            _ => None,
+    pub fn target_channel(&self) -> anyhow::Result<&str> {
+        match self.message.target() {
+            Some(Target::Channel(s)) => Ok(s),
+            _ => anyhow::bail!("no target channel"),
         }
     }
 
-    pub fn target_private(&self) -> Option<&str> {
-        match self.message.target()? {
-            Target::Private(s) => Some(s),
-            _ => None,
+    pub fn target_private(&self) -> anyhow::Result<&str> {
+        match self.message.target() {
+            Some(Target::Private(s)) => Ok(s),
+            _ => anyhow::bail!("no target user"),
         }
     }
 
-    pub fn nick(&self) -> Option<&str> {
-        self.message.nick()
+    pub fn nick(&self) -> anyhow::Result<&str> {
+        self.message
+            .nick()
+            .ok_or_else(|| anyhow::anyhow!("no nick found on message"))
     }
 
-    pub fn arg(&self, nth: usize) -> Option<&str> {
-        self.message.args.get(nth).as_ref().map(|s| s.as_str())
+    pub fn arg(&self, nth: usize) -> anyhow::Result<&str> {
+        self.message
+            .args
+            .get(nth)
+            .as_ref()
+            .map(|s| s.as_str())
+            .ok_or_else(|| anyhow::anyhow!("no arg at pos:{}", nth))
     }
 
-    pub fn command(&self) -> Option<Command<'_>> {
+    pub fn command(&self) -> anyhow::Result<Command<'_>> {
         use super::handler::match_command;
         if let HandlerKind::Command { command } = &*self.kind {
-            return match_command(command, self.data().ok()?)
-                .map(|(command, args)| Command { command, args });
+            if let Some((command, args)) = match_command(command, self.data()?) {
+                return Ok(Command { command, args });
+            }
         }
-        None
+        anyhow::bail!("command not found")
     }
 
-    pub fn auth_reply(&self) -> super::Response {
-        use super::IntoResponse as _;
-        Output::NotOwner.into_response(self.clone())
+    pub fn auth_reply(&self) {
+        unimplemented!();
+        // #[derive(crate::bot::prelude::Template, Debug)]
+        // #[parent("user_error")]
+        // enum Output {
+        //     NotOwner,
+        // }
+
+        // use super::IntoResponse as _;
+        // Output::NotOwner.into_response(self.clone())
     }
 
     pub fn check_auth(&self) -> bool {
-        if let Some(nick) = self.nick() {
+        if let Ok(nick) = self.nick() {
             return self.config.irc_config.owners.iter().any(|d| d == nick);
         }
         false
     }
-}
-
-#[derive(crate::bot::prelude::Template, Debug)]
-#[parent("user_error")]
-enum Output {
-    NotOwner,
 }
 
 #[cfg(test)]
@@ -141,6 +163,16 @@ impl Context {
         let data = data.to_string();
         let matches = Matches::from_regex(&re, &data);
         Self::make_context(data, matches)
+    }
+
+    pub fn mock_context_msg(msg: Message) -> Self {
+        Self {
+            config: Default::default(),
+            event: msg.command.clone(),
+            message: Arc::new(msg),
+            matches: Default::default(),
+            kind: Default::default(),
+        }
     }
 
     pub fn mock_context(data: impl ToString) -> Self {

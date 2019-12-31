@@ -1,4 +1,5 @@
-use crate::modules;
+// use crate::modules;
+use futures::prelude::*;
 use prelude::*;
 use std::sync::Arc;
 
@@ -13,10 +14,10 @@ impl<T> Bot<T> {
     /// Create a bot from a provided [`Config`](../config/struct.Config.html) and a [`Client`](../irc/struct.Client.html)
     pub fn create(config: Config, client: crate::irc::Client<T>) -> Self {
         // this is when the bot started, so force the initialization here
-        once_cell::sync::Lazy::force(&modules::builtin::START);
+        // once_cell::sync::Lazy::force(&modules::builtin::START);
 
         let mut dispatcher = Dispatcher::default();
-        modules::load_modules(&config, &mut dispatcher);
+        // modules::load_modules(&config, &mut dispatcher);
         Self {
             config,
             client,
@@ -62,10 +63,17 @@ impl<T> Bot<T> {
         loop {
             let msg = self.client.read().await?;
             log::trace!("{:?}", msg);
-            for resp in self.dispatcher.dispatch(msg, Arc::clone(&config)).await {
-                for line in resp.into_iter().filter(|s| !s.is_empty()) {
-                    self.client.write(line).await?;
-                }
+
+            // this detaches a task that waits for all of the futures to be done
+            // when they finish, the channel will drop
+            let mut responses = self.dispatcher.dispatch(msg, Arc::clone(&config));
+            // which causes this stream to end
+            // so this stays serial, as intended
+            // TODO if the handler blocks it'll block here
+            // so we should probably spawn this in a task and put it in a set
+            // which it can poll or timeout
+            while let Some(resp) = responses.next().await {
+                self.client.write(resp).await?;
             }
         }
     }
@@ -74,5 +82,4 @@ impl<T> Bot<T> {
 /// Module to allow for globbing all of the common imports used when writing modules/handlers
 pub mod prelude;
 
-mod template;
 pub use template::Template;

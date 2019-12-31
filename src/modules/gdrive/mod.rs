@@ -19,7 +19,7 @@ const GDRIVE_REGEX: &str = r"(?x)
     (.*?drive\.google\.com/uc.+?id=(?P<id2>[A-Za-z0-9_-]{33})&?) # this was also there
 ";
 
-async fn hear_gdrive(context: Context) -> impl IntoResponse {
+async fn hear_gdrive(context: Context, noye: Noye) -> impl IntoResponse {
     let query = Query {
         key: &get_api_key("gdrive")?,
     };
@@ -27,7 +27,7 @@ async fn hear_gdrive(context: Context) -> impl IntoResponse {
     let ids = context.matches().get_many("id1")?;
     let client = std::sync::Arc::new(reqwest::Client::new());
 
-    let ok = concurrent_for_each("gdrive", None, ids, |id| {
+    let ok = concurrent_map("gdrive", None, ids, |id| {
         let client = client.clone();
         let query = query;
         async move { lookup(&client, &id, query).await }

@@ -23,11 +23,11 @@ enum Output {
     },
 }
 
-async fn hear_vimeo(context: Context) -> impl IntoResponse {
+async fn hear_vimeo(context: Context, noye: Noye) -> impl IntoResponse {
     let vids = context.matches().get_many("vid")?;
 
     let client = std::sync::Arc::new(reqwest::Client::new());
-    let vec = concurrent_for_each("vimeo", None, vids, |vid| {
+    let vec = concurrent_map("vimeo", None, vids, |vid| {
         let client = client.clone();
         async move { lookup(&client, vid).await }
     })

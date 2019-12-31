@@ -1,8 +1,8 @@
 #[doc(inline)]
-pub use noye_derive::Template;
+pub use crate::command::{Context, Dispatcher, Event, Noye};
 
 #[doc(inline)]
-pub use crate::command::{Context, Dispatcher, Event, IntoResponse, Response};
+pub use template::*;
 
 #[doc(inline)]
 pub use crate::config::{self, ApiKey, Config};
@@ -17,7 +17,7 @@ pub use crate::matches::Matches;
 pub use crate::format::{CommaSeparated, FileSize, Iso8601, Timestamp};
 
 use futures::prelude::*;
-pub async fn concurrent_for_each<Iter, Item, Func, Fut, Ok, Err, Hint>(
+pub async fn concurrent_map<Iter, Item, Func, Fut, Ok, Err, Hint>(
     namespace: &str,
     hint: Hint,
     input: Iter,

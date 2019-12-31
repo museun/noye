@@ -74,11 +74,11 @@ impl Module {
 
 import_modules!(
     builtin;
-    youtube;
-    link_size;
-    vimeo;
-    gdrive;
-    instagram;
+    // youtube;
+    // link_size;
+    // vimeo;
+    // gdrive;
+    // instagram;
 );
 
 pub fn load_modules(_config: &Config, dispatcher: &mut Dispatcher) {

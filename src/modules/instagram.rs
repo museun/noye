@@ -22,10 +22,10 @@ static DISPLAY_REGEX: Lazy<regex::Regex> =
 static NAME_REGEX: Lazy<regex::Regex> =
     Lazy::new(|| regex::Regex::new(r##"<meta content=".*?\s\((?P<name>@.*?)\)\s"##).unwrap());
 
-async fn hear_instagram(context: Context) -> impl IntoResponse {
+async fn hear_instagram(context: Context, noye: Noye) -> impl IntoResponse {
     let iter = context.matches().get_many("id")?;
     let client = std::sync::Arc::new(reqwest::Client::new());
-    let ok = concurrent_for_each("instgram", None, iter, |id| {
+    let ok = concurrent_map("instgram", None, iter, |id| {
         let client = client.clone();
         async move { fetch_info(&client, id).await }
     })

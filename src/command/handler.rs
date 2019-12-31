@@ -1,83 +1,35 @@
-use super::{Context, Event, IntoResponse, Response};
+use super::{Context, Event, Noye};
 
-use futures::future::BoxFuture;
+use futures::prelude::*;
 use regex::Regex;
 
 use std::future::Future;
 use std::sync::Arc;
 
-#[derive(Clone)]
-pub struct Noye {
-    sender: tokio::sync::mpsc::Sender<String>,
-}
-
-impl Noye {
-    pub(crate) fn new(sender: tokio::sync::mpsc::Sender<String>) -> Self {
-        Self { sender }
-    }
-
-    pub fn raw(&mut self, data: impl ToString) {
-        let _ = self.sender.try_send(data.to_string());
-    }
-
-    pub fn reply(&mut self, ctx: Context, data: impl std::fmt::Display) {
-        use crate::irc::Target;
-        match ctx.target() {
-            Some(Target::Channel(target)) => self.raw(format!(
-                "PRIVMSG {} :{}: {}",
-                target,
-                ctx.nick().expect("nick must be attached to message"),
-                data
-            )),
-            Some(Target::Private(target)) => self.raw(format!("PRIVMSG {} :{}", target, data)),
-            None => {
-                log::warn!("cannot reply to a message without a target");
-            }
-        }
-    }
-
-    pub fn say(&mut self, ctx: Context, data: impl std::fmt::Display) {
-        use crate::irc::Target;
-        match ctx.target() {
-            Some(Target::Channel(target)) | Some(Target::Private(target)) => {
-                self.raw(format!("PRIVMSG {} :{}", target, data))
-            }
-            None => {
-                log::warn!("cannot reply to a message without a target");
-            }
-        }
-    }
-
-    pub fn join(&mut self, data: impl std::fmt::Display) {
-        self.raw(format!("JOIN {}", data))
-    }
-
-    pub fn part(&mut self, data: impl std::fmt::Display) {
-        self.raw(format!("PART {} :bye", data))
-    }
-
-    pub fn nick(&mut self, data: impl std::fmt::Display) {
-        self.raw(format!("NICK {}", data))
-    }
-}
-
-pub type DynHandler = dyn (Fn(Noye) -> BoxFuture<'static, Response>) + 'static + Send;
+pub type DynHandler = dyn (Fn(Context, Noye) -> future::BoxFuture<'static, ()>) + Send + 'static;
 pub trait Handler: Send + 'static {
-    type Fut: Future<Output = Response> + Send + 'static;
-    fn call(&self, noye: Noye) -> Self::Fut;
+    type Fut: Future + Send + 'static;
+    fn call(&self, context: Context, noye: Noye) -> Self::Fut;
 }
 
 impl<F, Fut> Handler for F
 where
+    F: Fn(Context, Noye) -> Fut,
     F: Send + 'static,
-    F: Fn(Noye) -> Fut,
-    Fut: Future + Send + 'static,
-    Fut::Output: IntoResponse,
+    Fut: TryFuture + Send + 'static,
+    Fut::Error: std::fmt::Display,
 {
-    type Fut = BoxFuture<'static, Response>;
-    fn call(&self, noye: Noye) -> Self::Fut {
-        let fut = (self)(noye.clone());
-        Box::pin(async move { fut.await.into_response(noye) })
+    type Fut = future::BoxFuture<'static, ()>;
+    fn call(&self, context: Context, noye: Noye) -> Self::Fut {
+        let fut = (self)(context.clone(), noye);
+        Box::pin(async move {
+            fut.inspect_err(|err| {
+                log::warn!("handler '{}' produced an error: {}", context.kind(), err)
+            })
+            .into_future()
+            .map(|_| ())
+            .await
+        })
     }
 }
 
@@ -114,7 +66,7 @@ impl WrappedHandler {
     pub fn new(handler: impl Handler, kind: HandlerKind) -> Self {
         Self {
             name: trunc(type_name(&handler), "::"),
-            handler: Box::new(move |ctx| Box::pin(handler.call(ctx))),
+            handler: Box::new(move |ctx, noye| Box::pin(handler.call(ctx, noye).map(|_| ()))),
             kind: Arc::new(kind),
         }
     }

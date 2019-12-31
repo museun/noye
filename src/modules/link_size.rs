@@ -17,7 +17,7 @@ enum Output {
     Many { files: String },
 }
 
-async fn link_size(context: Context) -> impl IntoResponse {
+async fn link_size(context: Context, noye: Noye) -> impl IntoResponse {
     let crate::config::LinkSize { size_limit } = context.config().modules_config.link_size;
     let links = context.matches().get_many("link")?;
 
@@ -45,7 +45,7 @@ async fn link_size(context: Context) -> impl IntoResponse {
 async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> {
     let client = std::sync::Arc::new(reqwest::Client::new());
 
-    let fut = concurrent_for_each(
+    let fut = concurrent_map(
         "link_size",
         input.len(),
         input.iter().enumerate(),
