@@ -1,3 +1,8 @@
+# when someone tries to use a command that they cannot
+# e.g. !restart
+[user_error]
+not_owner = "you cannot do that"
+
 [youtube]
 # channel  -- channel this video is from
 # duration -- how long the video is (hh:mm:ss format, where hh is optional)
@@ -56,11 +61,6 @@ many = "some of those are kind of big: ${files}"
 # display  -- display name
 # name     -- instagram name
 post = "${display} (${name})"
-
-# when someone tries to use a command that they cannot
-# e.g. !restart
-[user_error]
-not_owner = "you cannot do that"
 
 [uptime]
 # uptime   -- how long the bot has been running

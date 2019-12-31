@@ -15,6 +15,18 @@ pub struct Message {
     pub data: Option<String>,
 }
 
+#[cfg(test)]
+impl Default for Message {
+    fn default() -> Self {
+        Self {
+            prefix: Some(Default::default()),
+            command: Command::Numeric(0),
+            args: vec![],
+            data: None,
+        }
+    }
+}
+
 impl Message {
     pub fn data(&self) -> Option<&str> {
         self.data.as_ref().map(|s| s.as_str())

@@ -1,5 +1,5 @@
 use super::Context;
-use template::{Template, TemplateResolver}; // use crate::bot::{template::TemplateResolver, Template};
+use template::{Template, TemplateResolver};
 use tokio::sync::mpsc::Sender;
 
 #[derive(Clone)]
@@ -75,6 +75,15 @@ impl Noye {
 
     pub fn nick(&mut self, data: impl std::fmt::Display) -> anyhow::Result<()> {
         self.raw(format!("NICK {}", data))
+    }
+
+    pub fn requires_auth(&mut self, ctx: Context) -> anyhow::Result<()> {
+        #[derive(Template, Debug)]
+        #[parent("user_error")]
+        enum Output {
+            NotOwner,
+        }
+        self.reply_template(ctx, Output::NotOwner)
     }
 }
 

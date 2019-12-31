@@ -14,8 +14,7 @@ pub trait Handler: Send + 'static {
 
 impl<F, Fut> Handler for F
 where
-    F: Fn(Context, Noye) -> Fut,
-    F: Send + 'static,
+    F: Send + 'static + Fn(Context, Noye) -> Fut,
     Fut: TryFuture + Send + 'static,
     Fut::Error: std::fmt::Display,
 {

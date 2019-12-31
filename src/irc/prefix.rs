@@ -10,6 +10,17 @@ pub enum Prefix {
     },
 }
 
+#[cfg(test)]
+impl Default for Prefix {
+    fn default() -> Self {
+        Self::User {
+            nick: "noye".into(),
+            user: "noye".into(),
+            host: "noye".into(),
+        }
+    }
+}
+
 impl Prefix {
     pub(super) fn parse(input: &str) -> Option<Self> {
         if !input.starts_with(':') {

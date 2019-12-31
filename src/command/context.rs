@@ -14,6 +14,7 @@ impl<'a> Command<'a> {
     }
     pub fn args(&self) -> anyhow::Result<&'a str> {
         self.args
+            .filter(|s| !s.is_empty())
             .ok_or_else(|| anyhow::anyhow!("no args found for: {}", self.command))
     }
 }
@@ -60,9 +61,14 @@ impl Context {
         &*self.matches
     }
 
+    pub fn message(&self) -> &Message {
+        &*self.message
+    }
+
     pub fn data(&self) -> anyhow::Result<&str> {
         self.message
             .data()
+            .map(|s| s.trim())
             .ok_or_else(|| anyhow::anyhow!("expected data attached"))
     }
 
@@ -117,18 +123,6 @@ impl Context {
         anyhow::bail!("command not found")
     }
 
-    pub fn auth_reply(&self) {
-        unimplemented!();
-        // #[derive(crate::bot::prelude::Template, Debug)]
-        // #[parent("user_error")]
-        // enum Output {
-        //     NotOwner,
-        // }
-
-        // use super::IntoResponse as _;
-        // Output::NotOwner.into_response(self.clone())
-    }
-
     pub fn check_auth(&self) -> bool {
         if let Ok(nick) = self.nick() {
             return self.config.irc_config.owners.iter().any(|d| d == nick);
@@ -144,10 +138,10 @@ impl Context {
             config: Arc::new(Config::default()),
             event: Event::Privmsg,
             message: Arc::new(Message {
-                prefix: None,
                 command: Event::Privmsg,
                 args: vec!["#museun".into()],
                 data: Some(data.to_string()),
+                ..Default::default()
             }),
             matches: Arc::new(matches),
             kind: Default::default(),
@@ -156,6 +150,10 @@ impl Context {
 
     pub fn config_mut(&mut self) -> &mut Config {
         Arc::make_mut(&mut self.config)
+    }
+
+    pub fn message_mut(&mut self) -> &mut Message {
+        Arc::make_mut(&mut self.message)
     }
 
     pub fn mock_context_regex(data: impl ToString, re: impl AsRef<str>) -> Self {
@@ -175,7 +173,14 @@ impl Context {
         }
     }
 
-    pub fn mock_context(data: impl ToString) -> Self {
-        Self::make_context(data, Default::default())
+    pub fn mock_context(command: impl ToString, data: impl ToString) -> Self {
+        let mut ctx = Self::make_context(
+            format!("{} {}", command.to_string(), data.to_string()),
+            Default::default(),
+        );
+        ctx.kind = Arc::new(HandlerKind::Command {
+            command: command.to_string(),
+        });
+        ctx
     }
 }

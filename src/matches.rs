@@ -40,8 +40,7 @@ impl Matches {
     /// Get the key (capture name) and returns all matches
     pub fn get_many<Q: ?Sized>(&self, key: &Q) -> anyhow::Result<&[String]>
     where
-        Q: Hash + Eq,
-        Q: std::fmt::Display,
+        Q: Hash + Eq + std::fmt::Display,
         String: Borrow<Q>,
     {
         self.map
@@ -53,8 +52,7 @@ impl Matches {
 
     pub fn gather<Q: ?Sized>(&self, keys: &[&Q]) -> anyhow::Result<Vec<&'_ String>>
     where
-        Q: Hash + Eq,
-        Q: std::fmt::Display,
+        Q: Hash + Eq + std::fmt::Display,
         String: Borrow<Q>,
     {
         let mut result = vec![];

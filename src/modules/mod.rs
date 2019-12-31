@@ -9,18 +9,6 @@ macro_rules! ensure_api_key_for {
     };
 }
 
-/// Generate a Registry
-///
-/// This is used to bind handlers to their functions
-/// ```rust,no-run
-/// registry!(
-///     // kind     // type        // method
-///     listener => Command::Nick, reclaim;
-///     command  => "!join",       join;
-///     passive  => LINK_REGEX,    hear_instagram;
-/// );
-/// ```
-
 #[macro_export]
 macro_rules! registry {
     ($name:expr => { $($handler:tt => $arg:expr, $func:ident );* $(;)?} ) => {

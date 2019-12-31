@@ -1,4 +1,4 @@
-// use crate::modules;
+use crate::modules;
 use futures::prelude::*;
 use prelude::*;
 use std::sync::Arc;
@@ -14,10 +14,10 @@ impl<T> Bot<T> {
     /// Create a bot from a provided [`Config`](../config/struct.Config.html) and a [`Client`](../irc/struct.Client.html)
     pub fn create(config: Config, client: crate::irc::Client<T>) -> Self {
         // this is when the bot started, so force the initialization here
-        // once_cell::sync::Lazy::force(&modules::builtin::START);
+        modules::builtin::init_start(std::time::Instant::now());
 
         let mut dispatcher = Dispatcher::default();
-        // modules::load_modules(&config, &mut dispatcher);
+        modules::load_modules(&config, &mut dispatcher);
         Self {
             config,
             client,
