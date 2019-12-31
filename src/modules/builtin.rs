@@ -96,7 +96,7 @@ async fn restart(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     }
 
     let addr = &context.config().restart_config.address;
-    write_command(Supervisor::Restart, &addr).await
+    Supervisor::Restart.write(&addr).await
 }
 
 async fn respawn(context: Context, mut noye: Noye) -> anyhow::Result<()> {
@@ -108,11 +108,11 @@ async fn respawn(context: Context, mut noye: Noye) -> anyhow::Result<()> {
         .command()?
         .args()
         .ok()
-        .and_then(|s| s.parse::<u16>().ok())
+        .and_then(|s| s.parse().ok())
         .unwrap_or(15);
 
     let addr = &context.config().restart_config.address;
-    write_command(Supervisor::Delay(delay), &addr).await
+    Supervisor::Delay(delay).write(&addr).await
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -121,73 +121,27 @@ enum Supervisor {
     Delay(u16),
 }
 
-async fn write_command(cmd: Supervisor, addr: &str) -> anyhow::Result<()> {
-    let mut cmd = match cmd {
-        Supervisor::Restart => "RESTART".into(),
-        Supervisor::Delay(d) => format!("DELAY {}", d),
-    };
-    cmd.push('\0');
+impl Supervisor {
+    async fn write(self, addr: &str) -> anyhow::Result<()> {
+        let cmd = match self {
+            Supervisor::Restart => "RESTART\0".to_string(),
+            Supervisor::Delay(d) => format!("DELAY {}\0", d),
+        };
 
-    use tokio::io::*;
-    let mut stream = tokio::net::TcpStream::connect(addr).await?;
-    stream.write_all(cmd.as_bytes()).await?;
-    stream.flush().await.map_err(Into::into)
+        use tokio::io::*;
+        let mut stream = tokio::net::TcpStream::connect(addr).await?;
+        stream.write_all(cmd.as_bytes()).await?;
+        stream.flush().await.map_err(Into::into)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::irc::*;
-
-    use futures::prelude::*;
-    use tokio::sync::mpsc;
-
-    fn check_error<F, Fut>(func: F, input: Context)
-    where
-        F: Copy + FnOnce(Context, Noye) -> Fut,
-        Fut: Future<Output = anyhow::Result<()>>,
-    {
-        let (tx, mut rx) = mpsc::channel(32);
-        let noye = Noye::new(tx);
-        tokio_test::block_on(async move {
-            func(input, noye).await.unwrap_err();
-            assert!(rx.next().await.is_none())
-        });
-    }
-
-    fn check<F, Fut>(func: F, input: Context, mut output: Vec<&str>)
-    where
-        F: Copy + FnOnce(Context, Noye) -> Fut,
-        Fut: Future<Output = anyhow::Result<()>>,
-    {
-        let (tx, mut rx) = mpsc::channel(32);
-        let noye = Noye::new(tx);
-
-        tokio_test::block_on(async move {
-            if let Err(err) = func(input.clone(), noye).await {
-                panic!("failed to run '{}' on '{:#?}'", err, input.message());
-            }
-            let mut index = 0_usize;
-            while let Some(msg) = rx.next().await {
-                if output.is_empty() {
-                    panic!("got input: ({}) '{}' but output was empty", index, msg);
-                }
-                let left = output.remove(0);
-                assert_eq!(
-                    left,
-                    msg,
-                    "expected at output pos: {}. '{}' != '{}'",
-                    index,
-                    left.escape_debug(),
-                    msg.escape_debug()
-                );
-                index += 1;
-            }
-        });
-    }
+    use crate::bot::test::*;
 
     #[test]
-    fn test_ready() {
+    fn ready_without_q() {
         let mut ctx = Context::mock_context_msg(Message {
             command: Command::Ready,
             args: vec!["test_user".into()],
@@ -196,13 +150,23 @@ mod tests {
 
         // try without q info
         ctx.config_mut().irc_config.channels = vec!["#test".into(), "#test2".into()];
-        check(ready, ctx.clone(), vec!["JOIN #test", "JOIN #test2"]);
+        check(super::ready, ctx, vec!["JOIN #test", "JOIN #test2"]);
+    }
 
-        // try with q info
+    #[test]
+    fn ready_with_q() {
+        let mut ctx = Context::mock_context_msg(Message {
+            command: Command::Ready,
+            args: vec!["test_user".into()],
+            ..Default::default()
+        });
+
+        ctx.config_mut().irc_config.channels = vec!["#test".into(), "#test2".into()];
         ctx.config_mut().irc_config.q_name = "test_user".into();
         ctx.config_mut().irc_config.q_pass = "hunter2".into();
+
         check(
-            ready,
+            super::ready,
             ctx,
             vec![
                 "PRIVMSG Q@CServe.quakenet.org :AUTH test_user hunter2",
@@ -212,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn test_autojoin() {
+    fn autojoin_without_q() {
         let mut ctx = Context::mock_context_msg(Message {
             command: Command::Ready,
             args: vec!["test_user".into()],
@@ -221,8 +185,11 @@ mod tests {
 
         // without q info
         ctx.config_mut().irc_config.channels = vec!["#test".into(), "#test2".into()];
-        check(ready, ctx, vec!["JOIN #test", "JOIN #test2"]);
+        check(super::ready, ctx, vec!["JOIN #test", "JOIN #test2"]);
+    }
 
+    #[test]
+    fn autojoin_after_hidden_host() {
         // assume our host has been hidden
         let mut ctx = Context::mock_context_msg(Message {
             command: Command::Numeric(396),
@@ -232,129 +199,170 @@ mod tests {
 
         // without q info
         ctx.config_mut().irc_config.channels = vec!["#test".into(), "#test2".into()];
-        check(ready, ctx, vec!["JOIN #test", "JOIN #test2"]);
+        check(super::ready, ctx, vec!["JOIN #test", "JOIN #test2"]);
     }
 
     #[test]
-    fn test_ping() {
+    fn ping() {
         let ctx = Context::mock_context_msg(Message {
             command: Command::Ping,
             data: Some("123456789".into()),
             ..Default::default()
         });
 
-        check(ping, ctx, vec!["PONG 123456789"])
+        check(super::ping, ctx, vec!["PONG 123456789"])
     }
 
     #[test]
-    fn test_invite() {
+    fn invite() {
         let ctx = Context::mock_context_msg(Message {
             command: Command::Invite,
             data: Some("#test".into()),
             ..Default::default()
         });
 
-        check(invite, ctx, vec!["JOIN #test"])
+        check(super::invite, ctx, vec!["JOIN #test"])
     }
 
     #[test]
-    fn test_join() {
+    fn join() {
         let ctx = Context::mock_context("!join", "#test");
-        check(join, ctx, vec!["JOIN #test"]);
+        check(super::join, ctx, vec!["JOIN #test"]);
+    }
 
+    #[test]
+    fn join_invalid() {
         let ctx = Context::mock_context("!join", "");
-        check_error(join, ctx);
+        check_error(super::join, ctx);
     }
 
     #[test]
-    fn test_part() {
+    fn part() {
         let ctx = Context::mock_context("!part", "");
-        check(part, ctx, vec!["PART #museun :bye"]);
-
-        let mut ctx = Context::mock_context("!part", "");
-        ctx.message_mut().args = Default::default();
-        check_error(part, ctx);
+        check(super::part, ctx, vec!["PART #museun :bye"]);
     }
 
     #[test]
-    fn test_alt_nick() {
+    fn part_invalid() {
+        let mut ctx = Context::mock_context("!part", "");
+        ctx.message_mut().args = vec!["test_user".into()];
+        check_error(super::part, ctx);
+    }
+
+    #[test]
+    fn alt_nick() {
         let ctx = Context::mock_context_msg(Message {
             command: Command::NickCollision,
             args: vec!["".into(), "noye".into()],
             ..Default::default()
         });
 
-        check(alt_nick, ctx, vec!["NICK noye_"]);
+        check(super::alt_nick, ctx, vec!["NICK noye_"]);
     }
 
     #[test]
-    fn test_reclaim() {
+    fn reclaim_nick() {
         let mut ctx = Context::mock_context_msg(Message {
             command: Command::Nick,
             ..Default::default()
         });
         ctx.config_mut().irc_config.nick = "noye".into();
-        check(reclaim, ctx, vec!["NICK noye"]);
+        check(super::reclaim, ctx, vec!["NICK noye"]);
+    }
 
+    #[test]
+    fn reclaim_quit() {
         let mut ctx = Context::mock_context_msg(Message {
             command: Command::Quit,
             ..Default::default()
         });
         ctx.config_mut().irc_config.nick = "noye".into();
-        check(reclaim, ctx, vec!["NICK noye"]);
+        check(super::reclaim, ctx, vec!["NICK noye"]);
     }
 
     #[test]
-    fn test_uptime() {
+    fn reclaim_nick_nothing() {
+        let mut ctx = Context::mock_context_msg(Message {
+            command: Command::Nick,
+            ..Default::default()
+        });
+        ctx.config_mut().irc_config.nick = "not_noye".into();
+        check(super::reclaim, ctx, vec![]);
+    }
+
+    #[test]
+    fn reclaim_quit_nothing() {
+        let mut ctx = Context::mock_context_msg(Message {
+            command: Command::Quit,
+            ..Default::default()
+        });
+        ctx.config_mut().irc_config.nick = "not_noye".into();
+        check(super::reclaim, ctx, vec![]);
+    }
+
+    #[test]
+    fn uptime() {
         init_start(Instant::now() - std::time::Duration::from_secs(90062));
 
         let ctx = Context::mock_context("!uptime", "");
         check(
-            uptime,
+            super::uptime,
             ctx,
             vec!["PRIVMSG #museun :I've been running for 1 day, 1 hour, 1 minute and 2 seconds"],
         );
     }
 
     #[test]
-    fn test_restart() {
-        let mut ctx = Context::mock_context("!restart", "");
+    fn restart_no_auth() {
+        let ctx = Context::mock_context("!restart", "");
         check(
-            restart,
-            ctx.clone(),
+            super::restart,
+            ctx,
             vec!["PRIVMSG #museun :noye: you cannot do that"],
         );
+    }
+
+    #[test]
+    fn restart() {
+        let mut ctx = Context::mock_context("!restart", "");
 
         let mut rt = tokio::runtime::Runtime::new().unwrap();
         let (addr, mut rx) = supervisor(&mut rt);
 
         ctx.config_mut().restart_config.address = addr;
         ctx.config_mut().irc_config.owners.push("noye".into());
-        check(restart, ctx, vec![]);
+        check(super::restart, ctx, vec![]);
 
         let command = rt.block_on(async move { rx.next().await.unwrap() });
         assert_eq!(command, "RESTART");
     }
 
     #[test]
-    fn test_respawn() {
-        let mut ctx = Context::mock_context("!respawn", "");
+    fn respawn_no_auth() {
+        let ctx = Context::mock_context("!respawn", "");
         check(
             respawn,
-            ctx.clone(),
+            ctx,
             vec!["PRIVMSG #museun :noye: you cannot do that"],
         );
+    }
 
+    #[test]
+    fn respawn_default() {
         let mut rt = tokio::runtime::Runtime::new().unwrap();
         let (addr, mut rx) = supervisor(&mut rt);
 
+        let mut ctx = Context::mock_context("!respawn", "");
         ctx.config_mut().restart_config.address = addr;
         ctx.config_mut().irc_config.owners.push("noye".into());
         check(respawn, ctx, vec![]);
 
         let command = rt.block_on(async move { rx.next().await.unwrap() });
         assert_eq!(command, "DELAY 15");
+    }
 
+    #[test]
+    fn respawn_arg() {
         let mut rt = tokio::runtime::Runtime::new().unwrap();
         let (addr, mut rx) = supervisor(&mut rt);
 

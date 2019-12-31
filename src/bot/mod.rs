@@ -82,4 +82,8 @@ impl<T> Bot<T> {
 /// Module to allow for globbing all of the common imports used when writing modules/handlers
 pub mod prelude;
 
+#[doc(inline)]
 pub use template::Template;
+
+#[cfg(test)]
+pub mod test;
