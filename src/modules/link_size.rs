@@ -85,22 +85,20 @@ mod tests {
     use super::*;
     use crate::bot::test::*;
 
-    // TODO make the template matching pattern for check more ergonomic
     // TODO mock this
 
     #[test]
     #[ignore] // disabled so we don't hit that ep every time we run a test
     fn one_big_file() {
         let ctx = Context::mock_context_regex("https://speed.hetzner.de/100MB.bin", LINK_REGEX);
-
-        let res = "100.00 MB".into();
-        let res = crate::command::resolve_template(Output::Single { size: res }).unwrap();
-
-        check(
-            super::link_size,
-            ctx,
-            vec![&format!("PRIVMSG #museun :{}", res)],
+        let resp = say_template(
+            ctx.clone(),
+            Output::Single {
+                size: "100.00 MB".into(),
+            },
         );
+
+        check(super::link_size, ctx, vec![&resp]);
     }
 
     #[test]
@@ -111,14 +109,14 @@ mod tests {
             LINK_REGEX,
         );
 
-        let res = "#1: 100.00 MB, #2: 1000.00 MB".into();
-        let res = crate::command::resolve_template(Output::Many { files: res }).unwrap();
-
-        check(
-            super::link_size,
-            ctx,
-            vec![&format!("PRIVMSG #museun :{}", res)],
+        let resp = say_template(
+            ctx.clone(),
+            Output::Many {
+                files: "#1: 100.00 MB, #2: 1000.00 MB".into(),
+            },
         );
+
+        check(super::link_size, ctx, vec![&resp]);
     }
 
     #[test]
@@ -131,13 +129,13 @@ mod tests {
 
         ctx.config_mut().modules_config.link_size.size_limit = 1024 * 1024 * 10;
 
-        let res = "#1: 100.00 MB, #3: 1000.00 MB".into();
-        let res = crate::command::resolve_template(Output::Many { files: res }).unwrap();
-
-        check(
-            super::link_size,
-            ctx,
-            vec![&format!("PRIVMSG #museun :{}", res)],
+        let resp = say_template(
+            ctx.clone(),
+            Output::Many {
+                files: "#1: 100.00 MB, #3: 1000.00 MB".into(),
+            },
         );
+
+        check(super::link_size, ctx, vec![&resp]);
     }
 }

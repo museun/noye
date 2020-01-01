@@ -4,6 +4,28 @@ pub use crate::irc::*;
 pub use futures::prelude::*;
 pub use tokio::sync::mpsc;
 
+pub fn say_template<T: Template>(context: Context, template: T) -> String {
+    let data = crate::command::resolve_template(template).unwrap();
+    match context.target().unwrap() {
+        Target::Channel(target) | Target::Private(target) => {
+            format!("PRIVMSG {} :{}", target, data)
+        }
+    }
+}
+
+pub fn reply_template<T: Template>(context: Context, template: T) -> String {
+    let data = crate::command::resolve_template(template).unwrap();
+    match context.target().unwrap() {
+        Target::Channel(target) => format!(
+            "PRIVMSG {} :{}: {}",
+            target,
+            context.nick().expect("nick must be attached to message"),
+            data
+        ),
+        Target::Private(target) => format!("PRIVMSG {} :{}", target, data),
+    }
+}
+
 // TODO allow for asserting on errors
 pub fn check_error<F, Fut>(func: F, input: Context)
 where
