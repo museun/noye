@@ -76,10 +76,11 @@ fn init_logger(level: config::LogLevel) -> anyhow::Result<()> {
                 message,
             ))
         })
-        .level_for("noye", level)
+        .level_for("noye", log::LevelFilter::Debug)
         .chain(fern::log_file("noye.log")?);
 
     fern::Dispatch::new()
+        .level(log::LevelFilter::Off)
         .chain(stdout)
         .chain(log_file)
         .apply()?;
