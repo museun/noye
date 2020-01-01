@@ -23,7 +23,7 @@ const CHANNEL_REGEX: &str = r"(?x)
     (youtu\.be/|youtube.com/(\S*(channel/(?P<channel>[\w\-]+))|(user/(?P<user>[\w\-]+))))
 ";
 
-async fn hear_video(context: Context, noye: Noye) -> impl IntoResponse {
+async fn hear_video(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     static BASE: &str = "https://www.googleapis.com/youtube/v3/videos";
     static PART: &str = "statistics,snippet,liveStreamingDetails,contentDetails";
     static FIELDS: &str = "items(id,statistics,liveStreamingDetails,snippet \
@@ -32,8 +32,8 @@ async fn hear_video(context: Context, noye: Noye) -> impl IntoResponse {
 
     let pairs = context.data()?.split(' ').flat_map(find_vid_ts);
 
-    let client = std::sync::Arc::new(reqwest::Client::new());
-    let output = concurrent_map("youtube", None, pairs, |(id, ts)| {
+    let client = http::new_client();
+    let mut stream = concurrent_map("youtube", None, pairs, |(id, ts)| {
         let client = client.clone();
         async move {
             let item = lookup(&client, &id, BASE, PART, FIELDS).await?;
@@ -42,18 +42,22 @@ async fn hear_video(context: Context, noye: Noye) -> impl IntoResponse {
     })
     .await;
 
-    Ok(output.collect::<Vec<_>>().await)
+    while let Some(resp) = stream.next().await {
+        noye.say_template(&context, resp)?;
+    }
+
+    noye.nothing()
 }
 
-async fn hear_channel(context: Context, noye: Noye) -> impl IntoResponse {
+async fn hear_channel(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     static BASE: &str = "https://www.googleapis.com/youtube/v3/channels";
     static PART: &str = "snippet,statistics";
     static FIELDS: &str = "items(id,snippet(title,description,publishedAt),statistics,status)";
 
     let iter = context.matches().gather(&["channel", "user"])?;
 
-    let client = std::sync::Arc::new(reqwest::Client::new());
-    let output = concurrent_map("youtube", None, iter, |cid| {
+    let client = http::new_client();
+    let mut stream = concurrent_map("youtube", None, iter, |cid| {
         let client = client.clone();
         async move {
             let item = lookup(&client, &cid, BASE, PART, FIELDS).await?;
@@ -62,7 +66,11 @@ async fn hear_channel(context: Context, noye: Noye) -> impl IntoResponse {
     })
     .await;
 
-    Ok(output.collect::<Vec<_>>().await)
+    while let Some(resp) = stream.next().await {
+        noye.say_template(&context, resp)?;
+    }
+
+    noye.nothing()
 }
 
 async fn lookup(

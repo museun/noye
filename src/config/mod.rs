@@ -39,8 +39,7 @@ macro_rules! load_api_key {
 
         /// Get the api key, returning None if it was never set
         fn get_api_key(name: &str) -> anyhow::Result<Arc<String>> {
-            API_KEY
-                .as_ref()
+            API_KEY.as_ref()
                 .map(Arc::clone)
                 .ok_or_else(|| anyhow::anyhow!("no api key was set for: {}", name))
         }

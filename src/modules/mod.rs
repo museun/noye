@@ -1,14 +1,5 @@
 use crate::bot::prelude::*;
 
-#[cfg(test)]
-#[macro_export]
-macro_rules! ensure_api_key_for {
-    ($what:expr) => {
-        config::load_env().unwrap();
-        assert!(!get_api_key($what).unwrap().is_empty());
-    };
-}
-
 #[macro_export]
 macro_rules! registry {
     ($name:expr => { $($handler:tt => $arg:expr, $func:ident );* $(;)?} ) => {
@@ -62,11 +53,11 @@ impl Module {
 
 import_modules!(
     builtin;
-    // youtube;
+    youtube;
     link_size;
     vimeo;
-    // gdrive;
-    // instagram;
+    gdrive;
+    instagram;
 );
 
 pub fn load_modules(_config: &Config, dispatcher: &mut Dispatcher) {

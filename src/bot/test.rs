@@ -4,6 +4,14 @@ pub use crate::irc::*;
 pub use futures::prelude::*;
 pub use tokio::sync::mpsc;
 
+#[macro_export]
+macro_rules! ensure_api_key_for {
+    ($what:expr) => {
+        config::load_env().unwrap();
+        assert!(!get_api_key($what).unwrap().trim().is_empty());
+    };
+}
+
 pub fn say_template<T: Template>(context: &Context, template: T) -> String {
     let data = crate::command::resolve_template(template).unwrap();
     match context.target().unwrap() {

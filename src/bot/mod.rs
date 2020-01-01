@@ -92,4 +92,5 @@ pub mod prelude;
 pub use template::Template;
 
 #[cfg(test)]
+#[macro_use]
 pub mod test;

@@ -1,4 +1,5 @@
 use crate::bot::prelude::*;
+use crate::http;
 use futures::prelude::*;
 use once_cell::sync::Lazy;
 
@@ -22,17 +23,20 @@ static DISPLAY_REGEX: Lazy<regex::Regex> =
 static NAME_REGEX: Lazy<regex::Regex> =
     Lazy::new(|| regex::Regex::new(r##"<meta content=".*?\s\((?P<name>@.*?)\)\s"##).unwrap());
 
-async fn hear_instagram(context: Context, noye: Noye) -> impl IntoResponse {
+async fn hear_instagram(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     let iter = context.matches().get_many("id")?;
-    let client = std::sync::Arc::new(reqwest::Client::new());
-    let ok = concurrent_map("instgram", None, iter, |id| {
+    let client = http::new_client();
+    let mut stream = concurrent_map("instagram", None, iter, |id| {
         let client = client.clone();
         async move { fetch_info(&client, id).await }
     })
-    .await
-    .collect::<Vec<_>>()
     .await;
-    Ok(ok)
+
+    while let Some(resp) = stream.next().await {
+        noye.say_template(&context, resp)?;
+    }
+
+    noye.nothing()
 }
 
 async fn fetch_info(client: &reqwest::Client, id: &str) -> anyhow::Result<Output> {
@@ -82,3 +86,5 @@ fn get_title_and_name(id: &str, body: &str) -> Option<(String, String)> {
 
     (title, name).into()
 }
+
+// TODO add unit tests for this

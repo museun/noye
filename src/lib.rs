@@ -11,6 +11,7 @@ noye. an irc bot
 pub mod config;
 
 /// Bot types
+#[macro_use]
 pub mod bot;
 
 /// IRC client and types
@@ -32,4 +33,3 @@ mod modules;
 
 static DEFAULT_CONFIG: &str = include_str!("../default.toml");
 static DEFAULT_TEMPLATES: &str = include_str!("../templates.toml");
-
