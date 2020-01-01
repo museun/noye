@@ -4,7 +4,7 @@ pub use crate::irc::*;
 pub use futures::prelude::*;
 pub use tokio::sync::mpsc;
 
-pub fn say_template<T: Template>(context: Context, template: T) -> String {
+pub fn say_template<T: Template>(context: &Context, template: T) -> String {
     let data = crate::command::resolve_template(template).unwrap();
     match context.target().unwrap() {
         Target::Channel(target) | Target::Private(target) => {
@@ -13,7 +13,7 @@ pub fn say_template<T: Template>(context: Context, template: T) -> String {
     }
 }
 
-pub fn reply_template<T: Template>(context: Context, template: T) -> String {
+pub fn reply_template<T: Template>(context: &Context, template: T) -> String {
     let data = crate::command::resolve_template(template).unwrap();
     match context.target().unwrap() {
         Target::Channel(target) => format!(

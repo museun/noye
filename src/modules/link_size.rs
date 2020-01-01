@@ -39,7 +39,7 @@ async fn link_size(context: Context, mut noye: Noye) -> anyhow::Result<()> {
         }
     };
 
-    noye.say_template(context, output)
+    noye.say_template(&context, output)
 }
 
 async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> {
@@ -92,7 +92,7 @@ mod tests {
     fn one_big_file() {
         let ctx = Context::mock_context_regex("https://speed.hetzner.de/100MB.bin", LINK_REGEX);
         let resp = say_template(
-            ctx.clone(),
+            &ctx,
             Output::Single {
                 size: "100.00 MB".into(),
             },
@@ -110,7 +110,7 @@ mod tests {
         );
 
         let resp = say_template(
-            ctx.clone(),
+            &ctx,
             Output::Many {
                 files: "#1: 100.00 MB, #2: 1000.00 MB".into(),
             },
@@ -130,7 +130,7 @@ mod tests {
         ctx.config_mut().modules_config.link_size.size_limit = 1024 * 1024 * 10;
 
         let resp = say_template(
-            ctx.clone(),
+            &ctx,
             Output::Many {
                 files: "#1: 100.00 MB, #3: 1000.00 MB".into(),
             },

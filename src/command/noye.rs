@@ -1,5 +1,5 @@
-use super::{Context};
-use crate::bot::{UserError};
+use super::Context;
+use crate::bot::UserError;
 use template::{Template, TemplateResolver};
 use tokio::sync::mpsc::Sender;
 
@@ -22,7 +22,7 @@ impl Noye {
         Ok(())
     }
 
-    pub fn reply(&mut self, ctx: Context, data: impl std::fmt::Display) -> anyhow::Result<()> {
+    pub fn reply(&mut self, ctx: &Context, data: impl std::fmt::Display) -> anyhow::Result<()> {
         use crate::irc::Target;
         match ctx.target() {
             Some(Target::Channel(target)) => self.raw(format!(
@@ -39,7 +39,7 @@ impl Noye {
         }
     }
 
-    pub fn say(&mut self, ctx: Context, data: impl std::fmt::Display) -> anyhow::Result<()> {
+    pub fn say(&mut self, ctx: &Context, data: impl std::fmt::Display) -> anyhow::Result<()> {
         use crate::irc::Target;
         match ctx.target() {
             Some(Target::Channel(target)) | Some(Target::Private(target)) => {
@@ -52,14 +52,18 @@ impl Noye {
         }
     }
 
-    pub fn say_template<T: Template>(&mut self, ctx: Context, template: T) -> anyhow::Result<()> {
+    pub fn say_template<T: Template>(&mut self, ctx: &Context, template: T) -> anyhow::Result<()> {
         match resolve_template(template) {
             Some(data) => self.say(ctx, data),
             None => self.nothing(),
         }
     }
 
-    pub fn reply_template<T: Template>(&mut self, ctx: Context, template: T) -> anyhow::Result<()> {
+    pub fn reply_template<T: Template>(
+        &mut self,
+        ctx: &Context,
+        template: T,
+    ) -> anyhow::Result<()> {
         match resolve_template(template) {
             Some(data) => self.reply(ctx, data),
             None => self.nothing(),
@@ -78,7 +82,7 @@ impl Noye {
         self.raw(format!("NICK {}", data))
     }
 
-    pub fn requires_auth(&mut self, ctx: Context) -> anyhow::Result<()> {
+    pub fn requires_auth(&mut self, ctx: &Context) -> anyhow::Result<()> {
         self.reply_template(ctx, UserError::NotOwner)
     }
 }

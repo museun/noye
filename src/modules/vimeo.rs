@@ -1,4 +1,5 @@
 use crate::bot::prelude::*;
+use crate::http;
 use futures::prelude::*;
 
 registry!("vimeo" => {
@@ -23,19 +24,21 @@ enum Output {
     },
 }
 
-async fn hear_vimeo(context: Context, noye: Noye) -> impl IntoResponse {
+async fn hear_vimeo(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     let vids = context.matches().get_many("vid")?;
 
-    let client = std::sync::Arc::new(reqwest::Client::new());
-    let vec = concurrent_map("vimeo", None, vids, |vid| {
+    let client = http::new_client();
+    let mut stream = concurrent_map("vimeo", None, vids, |vid| {
         let client = client.clone();
         async move { lookup(&client, vid).await }
     })
-    .await
-    .collect::<Vec<_>>()
     .await;
 
-    Ok(vec)
+    while let Some(resp) = stream.next().await {
+        noye.say_template(&context, resp)?;
+    }
+
+    noye.nothing()
 }
 
 async fn lookup(client: &reqwest::Client, vid: &str) -> anyhow::Result<Output> {
@@ -80,4 +83,61 @@ async fn lookup(client: &reqwest::Client, vid: &str) -> anyhow::Result<Output> {
         owner: video.owner.name,
     };
     Ok(output)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bot::test::*;
+
+    // TODO mock this
+
+    #[test]
+    #[ignore]
+    fn hear_vimeo() {
+        let tests = vec![
+            (
+                "https://vimeo.com/23960970",
+                Output::Video {
+                    id: 23_960_970,
+                    width: 1280,
+                    height: 720,
+                    duration: "02:32".into(),
+                    fps: "25".into(),
+                    title: "NuFormer - 3D video mapping interactivity test. April 2011".into(),
+                    owner: "NuFormer".into(),
+                },
+            ),
+            (
+                "https://vimeo.com/220883711",
+                Output::Video {
+                    id: 220_883_711,
+                    width: 1920,
+                    height: 1080,
+                    duration: "03:11".into(),
+                    fps: "25".into(),
+                    title: "Mixed Reality - THEORIZ - RnD test 002".into(),
+                    owner: "THÉORIZ".into(),
+                },
+            ),
+            (
+                "https://vimeo.com/16750764",
+                Output::Video {
+                    id: 16_750_764,
+                    width: 1280,
+                    height: 720,
+                    duration: "02:40".into(),
+                    fps: "24".into(),
+                    title: "D7000 Video Test - Film Look".into(),
+                    owner: "Melo".into(),
+                },
+            ),
+        ];
+
+        for (input, expected) in tests {
+            let ctx = Context::mock_context_regex(input, VIMEO_REGEX);
+            let resp = say_template(&ctx, expected);
+            check(super::hear_vimeo, ctx, vec![&resp])
+        }
+    }
 }

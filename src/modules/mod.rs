@@ -64,7 +64,7 @@ import_modules!(
     builtin;
     // youtube;
     link_size;
-    // vimeo;
+    vimeo;
     // gdrive;
     // instagram;
 );

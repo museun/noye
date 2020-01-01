@@ -84,7 +84,7 @@ enum Output {
 
 async fn uptime(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     noye.say_template(
-        context,
+        &context,
         Output::Uptime {
             uptime: START.get().unwrap().elapsed().as_readable_time(),
         },
@@ -93,7 +93,7 @@ async fn uptime(context: Context, mut noye: Noye) -> anyhow::Result<()> {
 
 async fn restart(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     if !context.check_auth() {
-        return noye.requires_auth(context);
+        return noye.requires_auth(&context);
     }
 
     let addr = &context.config().restart_config.address;
@@ -102,7 +102,7 @@ async fn restart(context: Context, mut noye: Noye) -> anyhow::Result<()> {
 
 async fn respawn(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     if !context.check_auth() {
-        return noye.requires_auth(context);
+        return noye.requires_auth(&context);
     }
 
     let delay = context
@@ -308,7 +308,7 @@ mod tests {
 
         let ctx = Context::mock_context("!uptime", "");
         let resp = say_template(
-            ctx.clone(),
+            &ctx,
             Output::Uptime {
                 uptime: ts.elapsed().as_readable_time(),
             },
@@ -320,7 +320,7 @@ mod tests {
     #[test]
     fn restart_no_auth() {
         let ctx = Context::mock_context("!restart", "");
-        let resp = reply_template(ctx.clone(), UserError::NotOwner);
+        let resp = reply_template(&ctx, UserError::NotOwner);
         check(super::restart, ctx, vec![&resp]);
     }
 
@@ -342,7 +342,7 @@ mod tests {
     #[test]
     fn respawn_no_auth() {
         let ctx = Context::mock_context("!respawn", "");
-        let resp = reply_template(ctx.clone(), UserError::NotOwner);
+        let resp = reply_template(&ctx, UserError::NotOwner);
         check(super::respawn, ctx, vec![&resp]);
     }
 
