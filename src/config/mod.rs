@@ -39,7 +39,8 @@ macro_rules! load_api_key {
 
         /// Get the api key, returning None if it was never set
         fn get_api_key(name: &str) -> anyhow::Result<Arc<String>> {
-            API_KEY.as_ref()
+            API_KEY
+                .as_ref()
                 .map(Arc::clone)
                 .ok_or_else(|| anyhow::anyhow!("no api key was set for: {}", name))
         }
@@ -131,6 +132,7 @@ impl Config {
         std::process::exit(1);
     }
 
+    // FIXME: make this automatic (API KEY)
     fn load_keys_from_config(&self) {
         fn set_api_key<K: ApiKey>(apikey: &K) {
             let k = K::get_key();
@@ -138,8 +140,11 @@ impl Config {
             std::env::set_var(k, v);
         }
 
-        let Modules { youtube, .. } = &self.modules_config;
+        let Modules {
+            youtube, gdrive, ..
+        } = &self.modules_config;
         set_api_key(youtube);
+        set_api_key(gdrive);
     }
 
     /// Print out the default configuration
