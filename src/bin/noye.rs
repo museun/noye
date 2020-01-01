@@ -76,7 +76,7 @@ fn init_logger(level: config::LogLevel) -> anyhow::Result<()> {
                 message,
             ))
         })
-        .level_for("noye", log::LevelFilter::Trace)
+        .level_for("noye", level)
         .chain(fern::log_file("noye.log")?);
 
     fern::Dispatch::new()
@@ -93,6 +93,8 @@ fn main() -> anyhow::Result<()> {
     let mut runtime = tokio::runtime::Runtime::new().unwrap();
     let config = runtime.block_on(async move { config::Config::load().await })?;
     init_logger(config.log_level)?;
+
+    log::info!("setting log level to: {:?}", config.log_level);
 
     runtime.block_on(async move {
         let config::Irc { address, port, .. } = &config.irc_config;
