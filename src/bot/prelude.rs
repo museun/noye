@@ -2,6 +2,9 @@
 pub use crate::command::{Context, Dispatcher, Event, Noye};
 
 #[doc(inline)]
+pub use super::UserError;
+
+#[doc(inline)]
 pub use template::*;
 
 #[doc(inline)]
@@ -44,6 +47,5 @@ where
             }
         })
         .await;
-    drop(buf_tx); // drop so the stream will end
     buf_rx
 }

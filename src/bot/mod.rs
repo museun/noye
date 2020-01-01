@@ -3,6 +3,12 @@ use futures::prelude::*;
 use prelude::*;
 use std::sync::Arc;
 
+#[derive(Template, Debug)]
+#[parent("user_error")]
+pub enum UserError {
+    NotOwner,
+}
+
 /// Bot is the main item for creating a bot
 pub struct Bot<T> {
     config: Config,

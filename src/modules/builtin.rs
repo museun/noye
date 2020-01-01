@@ -76,12 +76,13 @@ async fn reclaim(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     noye.nothing()
 }
 
+#[derive(Template, Debug)]
+#[parent("uptime")]
+enum Output {
+    Uptime { uptime: String },
+}
+
 async fn uptime(context: Context, mut noye: Noye) -> anyhow::Result<()> {
-    #[derive(Template, Debug)]
-    #[parent("uptime")]
-    enum Output {
-        Uptime { uptime: String },
-    }
     noye.say_template(
         context,
         Output::Uptime {
@@ -302,24 +303,25 @@ mod tests {
 
     #[test]
     fn uptime() {
-        init_start(Instant::now() - std::time::Duration::from_secs(90062));
+        let ts = Instant::now() - std::time::Duration::from_secs(90062);
+        init_start(ts);
 
         let ctx = Context::mock_context("!uptime", "");
-        check(
-            super::uptime,
-            ctx,
-            vec!["PRIVMSG #museun :I've been running for 1 day, 1 hour, 1 minute and 2 seconds"],
+        let resp = say_template(
+            ctx.clone(),
+            Output::Uptime {
+                uptime: ts.elapsed().as_readable_time(),
+            },
         );
+
+        check(super::uptime, ctx, vec![&resp]);
     }
 
     #[test]
     fn restart_no_auth() {
         let ctx = Context::mock_context("!restart", "");
-        check(
-            super::restart,
-            ctx,
-            vec!["PRIVMSG #museun :noye: you cannot do that"],
-        );
+        let resp = reply_template(ctx.clone(), UserError::NotOwner);
+        check(super::restart, ctx, vec![&resp]);
     }
 
     #[test]
@@ -340,11 +342,8 @@ mod tests {
     #[test]
     fn respawn_no_auth() {
         let ctx = Context::mock_context("!respawn", "");
-        check(
-            respawn,
-            ctx,
-            vec!["PRIVMSG #museun :noye: you cannot do that"],
-        );
+        let resp = reply_template(ctx.clone(), UserError::NotOwner);
+        check(super::respawn, ctx, vec![&resp]);
     }
 
     #[test]

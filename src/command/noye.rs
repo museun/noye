@@ -1,4 +1,5 @@
-use super::Context;
+use super::{Context};
+use crate::bot::{UserError};
 use template::{Template, TemplateResolver};
 use tokio::sync::mpsc::Sender;
 
@@ -78,12 +79,7 @@ impl Noye {
     }
 
     pub fn requires_auth(&mut self, ctx: Context) -> anyhow::Result<()> {
-        #[derive(Template, Debug)]
-        #[parent("user_error")]
-        enum Output {
-            NotOwner,
-        }
-        self.reply_template(ctx, Output::NotOwner)
+        self.reply_template(ctx, UserError::NotOwner)
     }
 }
 
