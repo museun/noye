@@ -1,6 +1,13 @@
 use futures::prelude::*;
 use std::collections::HashMap;
 
+use std::sync::Arc;
+
+/// Make a sharable client
+pub fn new_client() -> Arc<reqwest::Client> {
+    Default::default()
+}
+
 /// so no query-strings can be used with get_json
 #[derive(serde::Serialize)]
 pub struct NoQuery;

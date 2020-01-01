@@ -63,7 +63,7 @@ impl Module {
 import_modules!(
     builtin;
     // youtube;
-    // link_size;
+    link_size;
     // vimeo;
     // gdrive;
     // instagram;

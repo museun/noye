@@ -17,7 +17,7 @@ enum Output {
     Many { files: String },
 }
 
-async fn link_size(context: Context, noye: Noye) -> impl IntoResponse {
+async fn link_size(context: Context, mut noye: Noye) -> anyhow::Result<()> {
     let crate::config::LinkSize { size_limit } = context.config().modules_config.link_size;
     let links = context.matches().get_many("link")?;
 
@@ -39,13 +39,13 @@ async fn link_size(context: Context, noye: Noye) -> impl IntoResponse {
         }
     };
 
-    Ok(output)
+    noye.say_template(context, output)
 }
 
 async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> {
-    let client = std::sync::Arc::new(reqwest::Client::new());
+    let client = http::new_client();
 
-    let fut = concurrent_map(
+    let mut sizes = concurrent_map(
         "link_size",
         input.len(),
         input.iter().enumerate(),
@@ -61,24 +61,83 @@ async fn get_many_sizes(input: &[String], size_limit: u64) -> Vec<(usize, u64)> 
                 anyhow::Result::<_>::Ok(res)
             }
         },
-    );
-
-    let mut sizes = fut
-        .await
-        .filter_map(|s| async move { s })
-        .collect::<Vec<_>>()
-        .await;
+    )
+    .await
+    .filter_map(|s| async move { s })
+    .collect::<Vec<_>>()
+    .await;
 
     sizes.sort();
     sizes
 }
 
 async fn get_size(client: &reqwest::Client, link: &str) -> anyhow::Result<u64> {
-    let resp = http::head(&client, link).await?;
-    let size = resp
+    http::head(&client, link)
+        .await?
         .headers()
         .get("Content-Length")
-        .and_then(|header| header.to_str().ok()?.parse::<u64>().ok())
-        .ok_or_else(|| anyhow::anyhow!("cannot get valid Content-Length header"))?;
-    Ok(size)
+        .and_then(|header| header.to_str().ok()?.parse().ok())
+        .ok_or_else(|| anyhow::anyhow!("cannot get valid Content-Length header"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bot::test::*;
+
+    // TODO make the template matching pattern for check more ergonomic
+    // TODO mock this
+
+    #[test]
+    #[ignore] // disabled so we don't hit that ep every time we run a test
+    fn one_big_file() {
+        let ctx = Context::mock_context_regex("https://speed.hetzner.de/100MB.bin", LINK_REGEX);
+
+        let res = "100.00 MB".into();
+        let res = crate::command::resolve_template(Output::Single { size: res }).unwrap();
+
+        check(
+            super::link_size,
+            ctx,
+            vec![&format!("PRIVMSG #museun :{}", res)],
+        );
+    }
+
+    #[test]
+    #[ignore] // disabled so we don't hit that ep every time we run a test
+    fn multiple_big_files() {
+        let ctx = Context::mock_context_regex(
+            "https://speed.hetzner.de/100MB.bin https://speed.hetzner.de/1GB.bin",
+            LINK_REGEX,
+        );
+
+        let res = "#1: 100.00 MB, #2: 1000.00 MB".into();
+        let res = crate::command::resolve_template(Output::Many { files: res }).unwrap();
+
+        check(
+            super::link_size,
+            ctx,
+            vec![&format!("PRIVMSG #museun :{}", res)],
+        );
+    }
+
+    #[test]
+    #[ignore] // disabled so we don't hit that ep every time we run a test
+    fn multiple_mix_big_files() {
+        let mut ctx = Context::mock_context_regex(
+            "https://speed.hetzner.de/100MB.bin http://speedtest.tele2.net/1MB.zip https://speed.hetzner.de/1GB.bin",
+            LINK_REGEX,
+        );
+
+        ctx.config_mut().modules_config.link_size.size_limit = 1024 * 1024 * 10;
+
+        let res = "#1: 100.00 MB, #3: 1000.00 MB".into();
+        let res = crate::command::resolve_template(Output::Many { files: res }).unwrap();
+
+        check(
+            super::link_size,
+            ctx,
+            vec![&format!("PRIVMSG #museun :{}", res)],
+        );
+    }
 }

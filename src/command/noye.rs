@@ -87,7 +87,7 @@ impl Noye {
     }
 }
 
-fn resolve_template<T: Template>(template: T) -> Option<String> {
+pub fn resolve_template<T: Template>(template: T) -> Option<String> {
     let (parent, name) = (T::parent(), template.variant());
     TemplateResolver::load(parent, name, "templates.toml")
         .and_then(|data| template.apply(&data))

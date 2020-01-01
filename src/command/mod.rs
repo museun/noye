@@ -8,4 +8,4 @@ mod handler;
 pub use self::handler::*;
 
 mod noye;
-pub use self::noye::Noye;
+pub use self::noye::{resolve_template, Noye};
