@@ -97,8 +97,7 @@ impl Context<Message> {
             .args
             .data
             .split(' ')
-            .map(url::Url::parse)
-            .flatten()
+            .flat_map(crate::util::parse_http_url)
             .filter(f)
             .collect();
 

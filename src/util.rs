@@ -173,3 +173,10 @@ where
 {
     String::deserialize(deser)?.parse().map_err(Error::custom)
 }
+
+pub fn parse_http_url(s: &str) -> Option<url::Url> {
+    url::Url::parse(s).ok().filter(|u| match u.scheme() {
+        "http" | "https" => true,
+        _ => false,
+    })
+}
