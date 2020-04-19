@@ -1,0 +1,7 @@
+---
+source: src/modules/repost/tests.rs
+expression: "responses.get_say::<responses::Repost>()"
+---
+SelfPosted:
+  count: "1"
+  ago: briefly

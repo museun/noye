@@ -1,0 +1,11 @@
+---
+source: src/modules/youtube/mod.rs
+expression: "responses.get_say::<responses::Youtube>()"
+---
+Video:
+  channel: "[channel]"
+  duration: "[duration]"
+  id: JzDQj4X17gI
+  title: "[title]"
+  ts: ""
+  views: "[views]"

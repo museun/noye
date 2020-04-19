@@ -1,0 +1,9 @@
+---
+source: src/modules/youtube/mod.rs
+expression: "responses.get_say::<responses::Youtube>()"
+---
+Channel:
+  id: UCRIrUpWA0Palydg6TiK56Ow
+  title: "[title]"
+  videos: "[videos]"
+  views: "[views]"

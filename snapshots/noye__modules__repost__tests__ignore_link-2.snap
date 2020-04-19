@@ -1,0 +1,5 @@
+---
+source: src/modules/repost/tests.rs
+expression: "responses.get_reply::<responses::Repost>()"
+---
+Ignored

@@ -1,0 +1,9 @@
+---
+source: src/modules/youtube/mod.rs
+expression: "responses.get_say::<responses::Youtube>()"
+---
+Upcoming:
+  channel: "[channel]"
+  id: LFpF4jPfnpo
+  start: "[start]"
+  title: "[title]"

@@ -1,0 +1,10 @@
+---
+source: src/modules/youtube/mod.rs
+expression: "responses.get_say::<responses::Youtube>()"
+---
+Live:
+  channel: "[channel]"
+  id: WsRUC73L-MA
+  title: "[title]"
+  ts: ""
+  viewers: "[viewers]"

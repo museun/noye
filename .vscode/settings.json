@@ -1,0 +1,5 @@
+{
+    "files.exclude": {
+        "snapshots/*.snap": true,
+    }
+}

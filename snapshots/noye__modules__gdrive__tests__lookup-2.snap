@@ -1,0 +1,11 @@
+---
+source: src/modules/gdrive.rs
+expression: "resp.get_say::<responses::GDrive>()"
+---
+Video:
+  title: "[title]"
+  created: "[created]"
+  size: 1.77 GB
+  width: 1920
+  height: 1080
+  duration: "08:07"

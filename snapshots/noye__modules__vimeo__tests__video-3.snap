@@ -1,0 +1,12 @@
+---
+source: src/modules/vimeo.rs
+expression: "resp.get_say::<responses::Vimeo>()"
+---
+Video:
+  id: 16750764
+  width: 1280
+  height: 720
+  duration: "02:40"
+  fps: "24"
+  title: "[title]"
+  owner: "[owner]"

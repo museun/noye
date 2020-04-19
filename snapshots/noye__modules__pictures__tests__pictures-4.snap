@@ -1,0 +1,6 @@
+---
+source: src/modules/pictures/mod.rs
+expression: "responses.get_reply::<responses::Pictures>()"
+---
+Refreshed:
+  new: "[new]"

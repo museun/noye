@@ -1,0 +1,6 @@
+---
+source: src/modules/link_size.rs
+expression: "responses.get_say::<responses::LinkSize>()"
+---
+Many:
+  files: "#2: 10.00 MB"

@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "contentDetails": {
+        "duration": "PT0S"
+      },
+      "id": "WsRUC73L-MA",
+      "liveStreamingDetails": {
+        "actualStartTime": "2020-04-17T01:17:46.000Z",
+        "concurrentViewers": "2704"
+      },
+      "snippet": {
+        "channelId": "UCVgO39Bk5sMo66-6o6Spn6Q",
+        "channelTitle": "ABC News (Australia)",
+        "liveBroadcastContent": "live",
+        "publishedAt": "2020-04-17T01:15:47.000Z",
+        "title": "Watch ABC News live"
+      },
+      "statistics": {
+        "commentCount": "0",
+        "dislikeCount": "41",
+        "favoriteCount": "0",
+        "likeCount": "142",
+        "viewCount": "27912"
+      }
+    }
+  ]
+}

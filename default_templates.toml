@@ -1,0 +1,40 @@
+[builtin]
+not_owner = "you cannot do that"
+
+[uptime]
+uptime = "uptime: ${uptime}"
+
+[join]
+expected_channel = "a channel is required"
+
+[link_size]
+single = "that file is kind of big: ${size}"
+many = "some of those are kind of big: ${files}"
+
+[repost]
+already_posted = "that was already linked by ${nick}. previously ${count} times. last being ${ago} ago."
+self_posted = "didn't you just link that ${ago} ago? (${count} times prior)"
+no_link_provided = "provide a link to ignore"
+already_ignored = "that was already ignored"
+ignored = "I ignored that link"
+
+[youtube]
+video = "${title} | ${channel} · ${duration} · ${views} | https://youtu.be/${id}${ts}"
+live = "(LIVE): ${title} | ${channel} · ${viewers} watching | https://youtu.be/${id}${ts}"
+upcoming = "(Upcoming: ${start}) ${title} | ${channel} | https://youtu.be/${id}"
+channel = "${title} | ${videos} videos. ${views} views | https://youtube.com/channel/${id}"
+
+[vimeo]
+video = "${title} | ${width}x${height} @ ${fps}fps · ${duration} · ${owner} | https://vimeo.com/${id}"
+
+[pictures]
+listing = "available commands: ${commands}"
+say = "${link}"
+reply = "${link}"
+refreshed = "${new}"
+
+[gdrive]
+video = "[${size}] ${title} | ${width}x${height} · ${duration}. created at ${created} ago"
+
+[instagram]
+title = "${title}"

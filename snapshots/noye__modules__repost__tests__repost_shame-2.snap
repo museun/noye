@@ -1,0 +1,8 @@
+---
+source: src/modules/repost/tests.rs
+expression: "responses.get_say::<responses::Repost>()"
+---
+AlreadyPosted:
+  nick: test_user
+  count: "2"
+  ago: briefly

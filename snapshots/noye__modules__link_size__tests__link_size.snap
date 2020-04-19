@@ -1,0 +1,6 @@
+---
+source: src/modules/link_size.rs
+expression: "responses.get_say::<responses::LinkSize>()"
+---
+Single:
+  size: 10.00 MB

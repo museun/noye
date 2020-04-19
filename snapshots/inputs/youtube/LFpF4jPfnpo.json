@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "contentDetails": {
+        "duration": "PT0S"
+      },
+      "id": "LFpF4jPfnpo",
+      "liveStreamingDetails": {
+        "activeLiveChatId": "Cg0KC0xGcEY0alBmbnBvKicKGFVDaGl3TERJQkpyVjVTeHFkaXhNSG1RQRILTEZwRjRqUGZucG8",
+        "scheduledStartTime": "2020-04-17T18:00:00.000Z"
+      },
+      "snippet": {
+        "channelId": "UChiwLDIBJrV5SxqdixMHmQA",
+        "channelTitle": "DRIVETRIBE",
+        "liveBroadcastContent": "upcoming",
+        "publishedAt": "2020-04-16T14:18:42.000Z",
+        "title": "Jeremy Clarkson's Live Pub Quiz"
+      },
+      "statistics": {
+        "commentCount": "0",
+        "dislikeCount": "27",
+        "favoriteCount": "0",
+        "likeCount": "444",
+        "viewCount": "0"
+      }
+    }
+  ]
+}

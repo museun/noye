@@ -1,0 +1,85 @@
+{
+  "alternateLink": "https://drive.google.com/file/d/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz/view?usp=drivesdk",
+  "appDataContents": false,
+  "capabilities": {
+    "canCopy": false,
+    "canEdit": false
+  },
+  "copyRequiresWriterPermission": false,
+  "copyable": false,
+  "createdDate": "2020-01-28T01:33:38.770Z",
+  "downloadUrl": "https://www.googleapis.com/drive/v2/files/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz?key=AIzaSyBQvR5b6pM1RmKFEFB_g69XDbfmpjw3SjA&alt=media&source=downloadUrl",
+  "editable": false,
+  "embedLink": "https://drive.google.com/file/d/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz/preview?usp=drivesdk",
+  "etag": "\"MTU4MDE4MjYxNjk3OA\"",
+  "explicitlyTrashed": false,
+  "fileExtension": "mkv",
+  "fileSize": "1899481664",
+  "headRevisionId": "0B3lmSN-qk6O-RmJGaExHdjQvSlhhaFpPbU9aajhvNnVwV3NvPQ",
+  "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/video/x-matroska",
+  "id": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+  "kind": "drive#file",
+  "labels": {
+    "hidden": false,
+    "restricted": false,
+    "starred": false,
+    "trashed": false,
+    "viewed": false
+  },
+  "lastModifyingUser": {
+    "displayName": "[redacted]]",
+    "emailAddress": "[redacted]",
+    "isAuthenticatedUser": false,
+    "kind": "drive#user",
+    "permissionId": "01114085466897604222",
+    "picture": {
+      "url": "https://lh3.googleusercontent.com/a-/AOh14GhkMqR6ZqgOLI3HpxPtc9fZOneuAsbdkoOm_hrcfQ=s64"
+    }
+  },
+  "lastModifyingUserName": "[redacted]",
+  "markedViewedByMeDate": "1970-01-01T00:00:00.000Z",
+  "md5Checksum": "d8e177be5211074fc83a96474148432e",
+  "mimeType": "video/x-matroska",
+  "modifiedDate": "2020-01-28T03:36:56.978Z",
+  "originalFilename": "[redacted]",
+  "ownerNames": [
+    "[redacted]"
+  ],
+  "owners": [
+    {
+      "displayName": "[redacted]",
+      "emailAddress": "[redacted]",
+      "isAuthenticatedUser": false,
+      "kind": "drive#user",
+      "permissionId": "01114085466897604222",
+      "picture": {
+        "url": "https://lh3.googleusercontent.com/a-/AOh14GhkMqR6ZqgOLI3HpxPtc9fZOneuAsbdkoOm_hrcfQ=s64"
+      }
+    }
+  ],
+  "parents": [],
+  "quotaBytesUsed": "0",
+  "selfLink": "https://www.googleapis.com/drive/v2/files/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+  "shared": true,
+  "spaces": [
+    "drive"
+  ],
+  "thumbnailLink": "https://lh3.googleusercontent.com/u3eIKz3hTU7Y-KCzmiQtusWKWqkrtFv85lFQFXfPE0ArBMzKh67yPHLslvg-Oa3SHAsfZrt-ohs=s220",
+  "title": "[redacted]",
+  "userPermission": {
+    "etag": "\"2t-0_pQ2ZUCdYzWuf_TtlvCndZE\"",
+    "id": "me",
+    "kind": "drive#permission",
+    "role": "reader",
+    "selfLink": "https://www.googleapis.com/drive/v2/files/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz/permissions/me",
+    "type": "user"
+  },
+  "version": "12",
+  "videoMediaMetadata": {
+    "durationMillis": "487000",
+    "height": 1080,
+    "width": 1920
+  },
+  "webContentLink": "https://drive.google.com/uc?id=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz&export=download",
+  "writersCanShare": true
+}
