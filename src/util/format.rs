@@ -1,3 +1,43 @@
+#[allow(dead_code, clippy::missing_const_for_fn)]
+pub fn type_name_of_val<T>(_: &T) -> &'static str {
+    std::any::type_name::<T>()
+}
+
+pub fn type_name<T>() -> &'static str {
+    fn reduce_type_name(mut input: &str) -> &str {
+        // this is .. totally not something you should do
+        fn trim_type(input: &str) -> &str {
+            let mut n = input.len();
+            let left = input
+                .chars()
+                .take_while(|&c| {
+                    if c == '<' {
+                        n -= 1;
+                    }
+                    !c.is_ascii_uppercase()
+                })
+                .count();
+            &input[left..n]
+        }
+
+        let original = input;
+        loop {
+            let start = input.len();
+            input = trim_type(input);
+            if input.contains('<') {
+                input = trim_type(&input[1..]);
+            }
+            match input.len() {
+                0 => break original,
+                d if d == start => break input,
+                _ => {}
+            }
+        }
+    }
+
+    reduce_type_name(std::any::type_name::<T>())
+}
+
 use std::convert::TryFrom;
 use std::time::Duration;
 
@@ -9,31 +49,24 @@ pub trait FileSize {
     fn as_file_size(&self) -> String;
 }
 
-impl FileSize for u64 {
-    fn as_file_size(&self) -> String {
-        const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
-        let mut order = 0;
-        let mut size = (*self) as f64;
-        while size >= 1024.0 && order + 1 < SIZES.len() {
-            order += 1;
-            size /= 1024.0
-        }
-        format!("{:.2} {}", size, SIZES[order])
-    }
+macro_rules! file_size_for {
+    ($($ty:ty),*) => {
+        $( #[allow(clippy::use_self)] impl FileSize for $ty {
+            fn as_file_size(&self) -> String {
+                const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+                let mut order = 0;
+                let mut size = (*self) as f64;
+                while size >= 1024.0 && order + 1 < SIZES.len() {
+                    order += 1;
+                    size /= 1024.0
+                }
+                format!("{:.2} {}", size, SIZES[order])
+            }
+        })*
+    };
 }
 
-impl FileSize for i64 {
-    fn as_file_size(&self) -> String {
-        const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
-        let mut order = 0;
-        let mut size = (*self) as f64;
-        while size >= 1024.0 && order + 1 < SIZES.len() {
-            order += 1;
-            size /= 1024.0
-        }
-        format!("{:.2} {}", size, SIZES[order])
-    }
-}
+file_size_for!(u64, i64);
 
 pub trait Timestamp {
     fn as_timestamp(&self) -> String;

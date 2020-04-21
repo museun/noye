@@ -1,4 +1,4 @@
-use crate::{AnyhowFut, Context, Message, Resolver};
+use super::{AnyhowFut, Context, Message, Resolver};
 
 use serde::{Deserialize, Serialize};
 use template::{NameCasing::Original, Template};
@@ -84,7 +84,7 @@ impl Responder for WriterResponder {
 
 pub async fn resolve_template<T>(resolver: Resolver, template: T) -> anyhow::Result<String>
 where
-    T: Template,
+    T: Template + Send,
 {
     let (name, ns, var) = (
         T::name(Original),

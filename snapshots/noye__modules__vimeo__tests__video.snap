@@ -1,5 +1,5 @@
 ---
-source: src/modules/vimeo.rs
+source: src/modules/vimeo/tests.rs
 expression: "resp.get_say::<responses::Vimeo>()"
 ---
 Video:

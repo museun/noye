@@ -19,11 +19,13 @@ pub async fn link_size<R: Responder>(context: Context, mut responder: R) -> Resu
         .iter()
         .enumerate()
         .map(|(i, url)| {
-            let client = client.get_or_insert_with(crate::http::new_client).clone();
+            let client = client
+                .get_or_insert_with(crate::http::client::new_client)
+                .clone();
             async move {
                 tokio::time::timeout(
                     tokio::time::Duration::from_secs(10),
-                    crate::http::head(client, url.as_str()),
+                    crate::http::client::head(client, url.as_str()),
                 )
                 .await
                 .ok()

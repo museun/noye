@@ -40,7 +40,7 @@ pub async fn uptime<R: Responder>(context: Context, mut responder: R) -> Result 
 
 pub async fn get_logs<R: Responder>(context: Context, mut responder: R) -> Result {
     let state = context.state.lock().await;
-    let temp = state.expect_get::<crate::web::TempStore>()?;
+    let temp = state.expect_get::<crate::http::server::TempStore>()?;
     let log_file = state.expect_get::<crate::LogFile>()?;
     let ExternalIp { address, port } = state.expect_get::<ExternalIp>()?.clone();
 
@@ -123,16 +123,26 @@ mod tests {
     use tokio::prelude::*;
 
     #[tokio::test]
-    async fn join() {
+    async fn join_not_owner() {
         set_snapshot_path();
 
         let responses = TestEnv::new("!join").execute(super::join).await;
         insta::assert_yaml_snapshot!(responses.get_reply::<responses::Builtin>());
         responses.expect_empty();
+    }
+
+    #[tokio::test]
+    async fn join_no_channel() {
+        set_snapshot_path();
 
         let responses = TestEnv::new("!join").owner().execute(super::join).await;
         insta::assert_yaml_snapshot!(responses.get_reply::<responses::Join>());
         responses.expect_empty();
+    }
+
+    #[tokio::test]
+    async fn join_channel() {
+        set_snapshot_path();
 
         let responses = TestEnv::new("!join #test")
             .owner()
@@ -143,12 +153,17 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn part() {
+    async fn part_not_owner() {
         set_snapshot_path();
 
         let responses = TestEnv::new("!part").execute(super::part).await;
         insta::assert_yaml_snapshot!(responses.get_reply::<responses::Builtin>());
         responses.expect_empty();
+    }
+
+    #[tokio::test]
+    async fn part_channel() {
+        set_snapshot_path();
 
         let responses = TestEnv::new("!part").owner().execute(super::part).await;
         insta::assert_yaml_snapshot!(responses.get_raw());
@@ -160,7 +175,6 @@ mod tests {
         set_snapshot_path();
 
         tokio::time::pause();
-
         let start = super::StartTime::default();
         tokio::time::advance(std::time::Duration::from_secs(10)).await;
 
@@ -173,7 +187,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn restart() {
+    async fn restart_not_owner() {
         set_snapshot_path();
 
         let mut listen = tokio::net::TcpListener::bind("localhost:0").await.unwrap();
@@ -186,6 +200,14 @@ mod tests {
         insta::assert_yaml_snapshot!(responses.get_reply::<responses::Builtin>());
         responses.expect_empty();
         assert!(listen.accept().now_or_never().is_none());
+    }
+
+    #[tokio::test]
+    async fn restart() {
+        set_snapshot_path();
+
+        let mut listen = tokio::net::TcpListener::bind("localhost:0").await.unwrap();
+        let addr = listen.local_addr().unwrap().to_string();
 
         let responses = TestEnv::new("!restart")
             .config(|config| config.modules.restart.address = addr)
@@ -198,7 +220,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn respawn() {
+    async fn respawn_not_owner() {
         set_snapshot_path();
 
         let mut listen = tokio::net::TcpListener::bind("localhost:0").await.unwrap();
@@ -211,6 +233,14 @@ mod tests {
         insta::assert_yaml_snapshot!(responses.get_reply::<responses::Builtin>());
         responses.expect_empty();
         assert!(listen.accept().now_or_never().is_none());
+    }
+
+    #[tokio::test]
+    async fn respawn_default() {
+        set_snapshot_path();
+
+        let mut listen = tokio::net::TcpListener::bind("localhost:0").await.unwrap();
+        let addr = listen.local_addr().unwrap().to_string();
 
         let responses = TestEnv::new("!respawn")
             .config(|config| config.modules.restart.address = addr.clone())
@@ -220,6 +250,14 @@ mod tests {
         responses.expect_empty();
         let data = accept_and_read(&mut listen).await;
         assert_eq!(data, b"DELAY 15\0");
+    }
+
+    #[tokio::test]
+    async fn respawn_custom() {
+        set_snapshot_path();
+
+        let mut listen = tokio::net::TcpListener::bind("localhost:0").await.unwrap();
+        let addr = listen.local_addr().unwrap().to_string();
 
         let responses = TestEnv::new("!respawn 30")
             .config(|config| config.modules.restart.address = addr)

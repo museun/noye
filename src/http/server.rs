@@ -61,17 +61,18 @@ async fn lookup_item(
         .read()
         .await
         .get(&name)
-        .ok_or_else(|| warp::reject::not_found())?;
+        .ok_or_else(warp::reject::not_found)?;
 
     let mut resp = Response::new(item.body);
     let headers = resp.headers_mut();
-    headers.typed_insert(headers::ContentType::from(item.content_type));
+    headers.typed_insert(item.content_type);
 
     Ok(resp)
 }
 
 pub type Id = String;
 
+// TODO allow just 'pathbufs' so it can read from disk, instead of storing it in memory
 #[derive(Clone)]
 pub struct Body {
     pub name: String,

@@ -20,10 +20,10 @@ impl VimeoClient {
             vid
         );
 
-        crate::http::get_json(
+        crate::http::client::get_json(
             client,
             &url,
-            &crate::http::NoQuery,
+            &crate::http::client::NoQuery,
             &[("Accept-Encoding", "identity")],
         )
         .await

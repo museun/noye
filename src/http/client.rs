@@ -1,5 +1,6 @@
 use anyhow::Context as _;
 
+// TODO memoize this
 pub fn new_client() -> reqwest::Client {
     reqwest::Client::new()
 }
@@ -84,4 +85,11 @@ pub async fn head(client: reqwest::Client, url: &str) -> anyhow::Result<reqwest:
         .with_context(|| format!("cannot get HEAD for '{}'", url))?
         .error_for_status()
         .with_context(|| format!("cannot get url '{}'", url))
+}
+
+pub fn parse_http_url(s: &str) -> Option<url::Url> {
+    url::Url::parse(s).ok().filter(|u| match u.scheme() {
+        "http" | "https" => true,
+        _ => false,
+    })
 }

@@ -1,4 +1,4 @@
-use noye::{Bot, WriterResponder};
+use noye::{Runner, WriterResponder};
 use tokio::{io::BufStream, net::TcpStream, prelude::*, sync::mpsc};
 
 const CONFIG_LOCATION: &str = "noye.toml";
@@ -39,9 +39,9 @@ async fn main() -> anyhow::Result<()> {
 
     init.state
         .insert(noye::CachedConfig::new(config, CONFIG_LOCATION));
-    init.state.insert(noye::LogFile(log_file.into()));
+    init.state.insert(noye::LogFile(log_file));
     // to configure this
-    let temp = noye::web::TempStore::default();
+    let temp = noye::http::server::TempStore::default();
     temp.start_culling();
     init.state.insert(temp);
 
@@ -53,7 +53,7 @@ async fn main() -> anyhow::Result<()> {
         ..
     } = init;
 
-    let mut bot = Bot::<WriterResponder>::new(state, writer, commands, passives);
+    let mut runner = Runner::new(state, writer, commands, passives);
     let responder = WriterResponder::new(
         tx,
         noye::resolver::new(template::MemoryStore::new(
@@ -62,12 +62,12 @@ async fn main() -> anyhow::Result<()> {
         ))?,
     );
 
-    let quit = bot.quit.clone();
+    let quit = runner.quit.clone();
     let mut string = String::new();
     loop {
         tokio::select! {
             Ok(_) = stream.read_line(&mut string) => {
-                bot.handle(&string, responder.clone()).await?;
+                runner.handle(&string, responder.clone()).await?;
                 string.clear();
             }
             Some(data) = rx.recv() => {

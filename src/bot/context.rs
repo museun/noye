@@ -1,7 +1,14 @@
-use crate::{responses::*, Bot, Message, Responder, State, Writer};
+use super::{Message, Responder, State, Writer};
 
 use std::sync::Arc;
 use tokio::sync::{Mutex, Notify};
+
+#[derive(Clone)]
+pub struct ContextArgs {
+    pub quit: Arc<Notify>,
+    pub writer: Writer,
+    pub state: Arc<Mutex<State>>,
+}
 
 #[derive(Clone)]
 pub struct Context<A: std::fmt::Debug = Message> {
@@ -18,12 +25,12 @@ impl<A: std::fmt::Debug> std::fmt::Debug for Context<A> {
 }
 
 impl<A: std::fmt::Debug> Context<A> {
-    pub fn new<R>(args: A, bot: &Bot<R>) -> Self {
+    pub fn new(args: A, ctx_args: ContextArgs) -> Self {
         Self {
             args: Arc::new(args),
-            writer: bot.writer.clone(),
-            state: bot.state.clone(),
-            quit: bot.quit.clone(),
+            writer: ctx_args.writer,
+            state: ctx_args.state,
+            quit: ctx_args.quit,
         }
     }
 }
@@ -50,7 +57,7 @@ impl Context<Message> {
     pub fn without_command(&self) -> Option<&str> {
         if self.args.data.starts_with('!') {
             let pos = self.args.data.find(' ')?;
-            return Some(&self.args.data[pos..]);
+            return self.args.data.get(pos + 1..);
         }
         None
     }
@@ -84,7 +91,11 @@ impl Context<Message> {
             return Ok(());
         }
 
-        responder.reply(self.clone(), Builtin::NotOwner).await?;
+        responder
+            .reply(self.clone(), crate::responses::Builtin::NotOwner)
+            .await?;
+
+        // This is needed to signal that this is an error
         crate::util::dont_care()
     }
 
@@ -97,14 +108,15 @@ impl Context<Message> {
             .args
             .data
             .split(' ')
-            .flat_map(crate::util::parse_http_url)
+            .flat_map(crate::http::client::parse_http_url)
             .filter(f)
             .collect();
 
-        if urls.is_empty() {
-            return crate::util::dont_care();
+        if !urls.is_empty() {
+            return Ok(urls);
         }
-        Ok(urls)
+
+        crate::util::dont_care()
     }
 
     pub async fn is_banned_channel(&self) -> anyhow::Result<()> {

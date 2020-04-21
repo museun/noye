@@ -1,5 +1,5 @@
 ---
-source: src/modules/repost/tests.rs
+source: src/modules/builtin.rs
 expression: "responses.get_reply::<responses::Builtin>()"
 ---
 NotOwner

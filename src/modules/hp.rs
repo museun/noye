@@ -13,7 +13,7 @@ where
 
 async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
     let state = context.state.lock().await;
-    let cache = state.expect_get::<Cache>()?.clone();
+    let cache = state.expect_get_cloned::<Cache>()?;
 
     let id = match context.without_command() {
         Some(args) => args.trim().to_uppercase(),
@@ -80,7 +80,7 @@ struct Cache {
 }
 
 impl Cache {
-    async fn lookup(&self, id: impl ToString) -> anyhow::Result<Arc<Concert>> {
+    async fn lookup(&self, id: impl ToString + Send) -> anyhow::Result<Arc<Concert>> {
         use select::predicate::*;
 
         let mut data = self.data.lock().await;
@@ -89,7 +89,7 @@ impl Cache {
             return Ok(id.clone());
         }
 
-        let client = crate::http::new_client();
+        let client = crate::http::client::new_client();
         let body = client
             .get(&format!(
                 "http://www.helloproject.com/release/detail/{}",

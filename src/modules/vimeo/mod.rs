@@ -35,7 +35,7 @@ pub async fn hear_video<R: Responder>(context: Context, responder: R) -> Result 
         .map(|vid| {
             let (context, responder, vimeo) = (context.clone(), responder.clone(), vimeo.clone());
             let client = http_client
-                .get_or_insert_with(crate::http::new_client)
+                .get_or_insert_with(crate::http::client::new_client)
                 .clone();
             async move {
                 let video = vimeo.lookup_video(&vid, client).await?;

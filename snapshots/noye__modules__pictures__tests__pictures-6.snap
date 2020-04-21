@@ -3,4 +3,4 @@ source: src/modules/pictures/mod.rs
 expression: "responses.get_reply::<responses::Pictures>()"
 ---
 Listing:
-  commands: "!pictures, !youtube"
+  commands: "!pictures"

@@ -10,7 +10,7 @@ where
 
     let client = GDriveClient::new(
         &init.state.config().await?.modules.gdrive.api_key,
-        crate::http::new_client(),
+        crate::http::client::new_client(),
     );
     init.state.expect_insert(client)
 }
@@ -37,7 +37,7 @@ pub async fn hear_gdrive<R: Responder>(context: Context, responder: R) -> Result
                     .collect::<HashMap<_, _>>()
                     .remove("id")
                     .map(|s| s.to_string()),
-                _ => return None,
+                _ => None,
             }
         })
         .map(|id| {
@@ -110,7 +110,7 @@ impl GDriveClient {
             key: &'a str,
         }
 
-        crate::http::get_json(
+        crate::http::client::get_json(
             self.client.clone(),
             &url,
             &Query { key: &self.api_key },
@@ -171,7 +171,7 @@ mod tests {
             format!("file/d/{}/view", id),
         ];
 
-        let client = crate::http::new_client();
+        let client = crate::http::client::new_client();
         for input in input {
             let resp = TestEnv::new(format!("https://drive.google.com/{}", input))
                 .insert(super::GDriveClient::with_ep(
