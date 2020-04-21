@@ -123,3 +123,24 @@ pub enum Instagram {
 pub enum TempStore {
     Link { link: String },
 }
+
+#[derive(Template, Debug, Clone, Serialize, Deserialize)]
+#[namespace("concert")]
+pub enum Concert {
+    NoIdProvided,
+    Title {
+        id: String,
+        title: String,
+    },
+    Total {
+        num: String,
+        chapter_count: String,
+        length: String,
+    },
+    Talks {
+        num: String,
+        chapter_count: String,
+        length: String,
+        chapters: String,
+    },
+}
