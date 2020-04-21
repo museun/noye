@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use ::serde::de::*;
 use std::str::FromStr;
 

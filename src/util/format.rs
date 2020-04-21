@@ -1,3 +1,4 @@
+#[allow(dead_code, clippy::missing_const_for_fn)]
 pub fn type_name_of_val<T>(_: &T) -> &'static str {
     std::any::type_name::<T>()
 }
@@ -48,31 +49,24 @@ pub trait FileSize {
     fn as_file_size(&self) -> String;
 }
 
-impl FileSize for u64 {
-    fn as_file_size(&self) -> String {
-        const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
-        let mut order = 0;
-        let mut size = (*self) as f64;
-        while size >= 1024.0 && order + 1 < SIZES.len() {
-            order += 1;
-            size /= 1024.0
-        }
-        format!("{:.2} {}", size, SIZES[order])
-    }
+macro_rules! file_size_for {
+    ($($ty:ty),*) => {
+        $( #[allow(clippy::use_self)] impl FileSize for $ty {
+            fn as_file_size(&self) -> String {
+                const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+                let mut order = 0;
+                let mut size = (*self) as f64;
+                while size >= 1024.0 && order + 1 < SIZES.len() {
+                    order += 1;
+                    size /= 1024.0
+                }
+                format!("{:.2} {}", size, SIZES[order])
+            }
+        })*
+    };
 }
 
-impl FileSize for i64 {
-    fn as_file_size(&self) -> String {
-        const SIZES: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
-        let mut order = 0;
-        let mut size = (*self) as f64;
-        while size >= 1024.0 && order + 1 < SIZES.len() {
-            order += 1;
-            size /= 1024.0
-        }
-        format!("{:.2} {}", size, SIZES[order])
-    }
-}
+file_size_for!(u64, i64);
 
 pub trait Timestamp {
     fn as_timestamp(&self) -> String;

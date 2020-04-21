@@ -37,7 +37,7 @@ pub async fn hear_gdrive<R: Responder>(context: Context, responder: R) -> Result
                     .collect::<HashMap<_, _>>()
                     .remove("id")
                     .map(|s| s.to_string()),
-                _ => return None,
+                _ => None,
             }
         })
         .map(|id| {

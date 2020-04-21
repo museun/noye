@@ -33,6 +33,12 @@ impl State {
             .and_then(|item| item.downcast_mut::<T>())
     }
 
+    pub fn expect_get_cloned<T: 'static + Send + Sync>(&self) -> anyhow::Result<&T> {
+        self.get()
+            .cloned()
+            .ok_or_else(|| anyhow::anyhow!("cannot get: {}", type_name::<T>()))
+    }
+
     pub fn expect_get<T: 'static + Send + Sync>(&self) -> anyhow::Result<&T> {
         self.get()
             .ok_or_else(|| anyhow::anyhow!("cannot get: {}", type_name::<T>()))

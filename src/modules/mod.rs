@@ -70,7 +70,7 @@ where
     Ok(())
 }
 
-pub async fn add_external_ip(state: &mut State, host: &str, port: u16) -> anyhow::Result<()> {
+async fn add_external_ip(state: &mut State, host: &str, port: u16) -> anyhow::Result<()> {
     let address = reqwest::get(host)
         .await?
         .error_for_status()?

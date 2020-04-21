@@ -3,11 +3,11 @@ pub use crate::irc::Message;
 mod context;
 pub use context::Context;
 
-mod resolver;
+pub mod resolver;
 pub use resolver::Resolver;
 
 mod responder;
-pub use responder::Responder;
+pub use responder::{Responder, WriterResponder};
 
 mod state;
 pub use state::State;

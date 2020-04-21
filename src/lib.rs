@@ -1,24 +1,23 @@
-#![cfg_attr(debug_assertions, allow(dead_code))]
-
+#![allow(clippy::future_not_send)]
 pub static DEFAULT_TEMPLATES: &str = include_str!("../default_templates.toml");
-
-#[macro_use]
-pub mod db;
-
-pub mod bot;
-pub use bot::{Context, Handler, Message, Responder, Runner, Writer};
-
-pub(crate) mod responses;
-
-mod config;
-pub use config::{CachedConfig, Config};
-
-pub mod modules;
 
 #[derive(Debug, Clone)]
 pub struct LogFile(pub std::path::PathBuf);
 
-mod http;
+#[macro_use]
+pub mod db;
+
+mod bot;
+pub use bot::{resolver, Context, Handler, Message, Responder, Runner, Writer, WriterResponder};
+
+pub(crate) mod responses;
+
+pub mod config;
+pub use config::{CachedConfig, Config};
+
+pub mod http;
+pub mod modules;
+
 mod irc;
 mod util;
 
