@@ -1,3 +1,42 @@
+pub fn type_name_of_val<T>(_: &T) -> &'static str {
+    std::any::type_name::<T>()
+}
+
+pub fn type_name<T>() -> &'static str {
+    fn reduce_type_name(mut input: &str) -> &str {
+        // this is .. totally not something you should do
+        fn trim_type(input: &str) -> &str {
+            let mut n = input.len();
+            let left = input
+                .chars()
+                .take_while(|&c| {
+                    if c == '<' {
+                        n -= 1;
+                    }
+                    !c.is_ascii_uppercase()
+                })
+                .count();
+            &input[left..n]
+        }
+
+        let original = input;
+        loop {
+            let start = input.len();
+            input = trim_type(input);
+            if input.contains('<') {
+                input = trim_type(&input[1..]);
+            }
+            match input.len() {
+                0 => break original,
+                d if d == start => break input,
+                _ => {}
+            }
+        }
+    }
+
+    reduce_type_name(std::any::type_name::<T>())
+}
+
 use std::convert::TryFrom;
 use std::time::Duration;
 

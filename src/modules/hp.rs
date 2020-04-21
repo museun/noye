@@ -89,7 +89,7 @@ impl Cache {
             return Ok(id.clone());
         }
 
-        let client = crate::http::new_client();
+        let client = crate::http::client::new_client();
         let body = client
             .get(&format!(
                 "http://www.helloproject.com/release/detail/{}",

@@ -14,7 +14,7 @@ where
 }
 
 pub async fn hear_instagram<R: Responder>(context: Context, responder: R) -> Result {
-    let client = crate::http::new_client();
+    let client = crate::http::client::new_client();
 
     let set: futures::stream::FuturesUnordered<_> = context
         .get_links_filter(filter)?
@@ -49,7 +49,7 @@ async fn get_title(client: reqwest::Client, url: &str) -> anyhow::Result<Option<
         "Instagram profile",
     ];
 
-    let body = crate::http::get_body(client, url, &[]).await?;
+    let body = crate::http::client::get_body(client, url, &[]).await?;
 
     let document = Document::from(body.as_str());
     let title = match document

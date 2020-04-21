@@ -72,6 +72,7 @@ async fn lookup_item(
 
 pub type Id = String;
 
+// TODO allow just 'pathbufs' so it can read from disk, instead of storing it in memory
 #[derive(Clone)]
 pub struct Body {
     pub name: String,

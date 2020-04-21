@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-pub use crate::{responses::*, *};
+pub use crate::{bot::*, responses::*, *};
 pub use futures::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -50,8 +50,19 @@ impl YamlResponder {
     pub fn expect_empty(&self) {
         assert!(
             self.is_empty(),
-            "expected no responses, got: {}",
-            self.len()
+            "expected no responses, got: {}.\n{}",
+            self.len(),
+            self.responses
+                .lock()
+                .unwrap()
+                .iter()
+                .fold(String::new(), |mut a, c| {
+                    if !a.is_empty() {
+                        a.push('\n')
+                    }
+                    a.push_str(&format!("{:#?}", c));
+                    a
+                })
         )
     }
 
@@ -108,9 +119,9 @@ fn resp_kind(response: Response) -> &'static str {
 }
 
 pub fn set_snapshot_path() {
-    let mut settings = insta::Settings::new();
-    settings.set_snapshot_path(get_snapshot_path());
-    settings.bind_to_thread();
+    // let mut settings = insta::Settings::new();
+    // settings.set_snapshot_path(get_snapshot_path());
+    // settings.bind_to_thread();
 }
 
 pub fn get_snapshot_path() -> std::path::PathBuf {

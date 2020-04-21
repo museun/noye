@@ -1,7 +1,8 @@
 pub(self) type Result = anyhow::Result<()>;
 use anyhow::Context as _;
 
-pub(self) use crate::{db::Table, format::*, responses::*, *};
+// TODO don't do this
+pub(self) use crate::{bot::*, db::Table, responses::*, util::*, *};
 pub(self) use futures::prelude::*;
 
 mod builtin;
@@ -56,11 +57,14 @@ where
     add_external_ip(&mut init.state, &lookup_ip, listen_port).await?;
 
     let db = init.state.expect_get::<pictures::web::Db>()?.clone();
-    let temp = init.state.expect_get::<crate::web::TempStore>()?.clone();
+    let temp = init
+        .state
+        .expect_get::<crate::http::server::TempStore>()?
+        .clone();
 
     use warp::Filter as _;
     // TODO abstract this out
-    let routes = pictures::web::lookup(db).or(crate::web::temporary(temp));
+    let routes = pictures::web::lookup(db).or(crate::http::server::temporary(temp));
     tokio::spawn(warp::serve(routes).run(addr));
 
     Ok(())

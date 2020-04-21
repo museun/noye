@@ -1,4 +1,4 @@
-use crate::{AnyhowFut, Context, Message, Resolver};
+use super::{AnyhowFut, Context, Message, Resolver};
 
 use serde::{Deserialize, Serialize};
 use template::{NameCasing::Original, Template};

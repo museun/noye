@@ -40,7 +40,7 @@ pub async fn uptime<R: Responder>(context: Context, mut responder: R) -> Result 
 
 pub async fn get_logs<R: Responder>(context: Context, mut responder: R) -> Result {
     let state = context.state.lock().await;
-    let temp = state.expect_get::<crate::web::TempStore>()?;
+    let temp = state.expect_get::<crate::http::server::TempStore>()?;
     let log_file = state.expect_get::<crate::LogFile>()?;
     let ExternalIp { address, port } = state.expect_get::<ExternalIp>()?.clone();
 

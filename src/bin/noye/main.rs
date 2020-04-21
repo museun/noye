@@ -1,83 +1,85 @@
-use noye::{Bot, WriterResponder};
-use tokio::{io::BufStream, net::TcpStream, prelude::*, sync::mpsc};
+fn main() {}
 
-const CONFIG_LOCATION: &str = "noye.toml";
+// use noye::{Bot, WriterResponder};
+// use tokio::{io::BufStream, net::TcpStream, prelude::*, sync::mpsc};
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    std::env::set_var("RUST_LOG", "noye=trace");
+// const CONFIG_LOCATION: &str = "noye.toml";
 
-    let opts = alto_logger::Options::default()
-        .with_time(alto_logger::options::TimeConfig::date_time_format("%c"));
-    let file = alto_logger::FileLogger::timestamp(opts.clone(), "noye.log")?;
-    let log_file = file.file_name().map(ToOwned::to_owned).unwrap();
+// #[tokio::main]
+// async fn main() -> anyhow::Result<()> {
+//     std::env::set_var("RUST_LOG", "noye=trace");
 
-    let logger = alto_logger::MultiLogger::new()
-        .with(alto_logger::TermLogger::new(opts.clone())?)
-        .with(file);
-    alto_logger::init(logger).expect("init logger");
+//     let opts = alto_logger::Options::default()
+//         .with_time(alto_logger::options::TimeConfig::date_time_format("%c"));
+//     let file = alto_logger::FileLogger::timestamp(opts.clone(), "noye.log")?;
+//     let log_file = file.file_name().map(ToOwned::to_owned).unwrap();
 
-    let config = noye::Config::load(CONFIG_LOCATION).await?;
+//     let logger = alto_logger::MultiLogger::new()
+//         .with(alto_logger::TermLogger::new(opts.clone())?)
+//         .with(file);
+//     alto_logger::init(logger).expect("init logger");
 
-    let noye::config::Irc {
-        name,
-        real,
-        user,
-        address,
-        ..
-    } = &config.irc_config;
+//     let config = noye::Config::load(CONFIG_LOCATION).await?;
 
-    let (tx, mut rx) = mpsc::channel::<String>(64);
+//     let noye::config::Irc {
+//         name,
+//         real,
+//         user,
+//         address,
+//         ..
+//     } = &config.irc_config;
 
-    let mut writer = noye::Writer(tx.clone());
-    writer.raw(format!("NICK {}", &name)).await?;
-    writer.raw(format!("USER {} * 8 :{}", &user, &real)).await?;
+//     let (tx, mut rx) = mpsc::channel::<String>(64);
 
-    let mut stream = BufStream::new(TcpStream::connect(&address).await?);
+//     let mut writer = noye::Writer(tx.clone());
+//     writer.raw(format!("NICK {}", &name)).await?;
+//     writer.raw(format!("USER {} * 8 :{}", &user, &real)).await?;
 
-    let mut init = noye::modules::ModuleInit::default();
+//     let mut stream = BufStream::new(TcpStream::connect(&address).await?);
 
-    init.state
-        .insert(noye::CachedConfig::new(config, CONFIG_LOCATION));
-    init.state.insert(noye::LogFile(log_file.into()));
-    // to configure this
-    let temp = noye::web::TempStore::default();
-    temp.start_culling();
-    init.state.insert(temp);
+//     let mut init = noye::modules::ModuleInit::default();
 
-    noye::modules::initialize_modules(&mut init).await?;
-    let noye::modules::ModuleInit {
-        commands,
-        passives,
-        state,
-        ..
-    } = init;
+//     init.state
+//         .insert(noye::CachedConfig::new(config, CONFIG_LOCATION));
+//     init.state.insert(noye::LogFile(log_file.into()));
+//     // to configure this
+//     let temp = noye::web::TempStore::default();
+//     temp.start_culling();
+//     init.state.insert(temp);
 
-    let mut bot = Bot::<WriterResponder>::new(state, writer, commands, passives);
-    let responder = WriterResponder::new(
-        tx,
-        noye::resolver::new(template::MemoryStore::new(
-            noye::DEFAULT_TEMPLATES, //
-            template::load_toml,
-        ))?,
-    );
+//     noye::modules::initialize_modules(&mut init).await?;
+//     let noye::modules::ModuleInit {
+//         commands,
+//         passives,
+//         state,
+//         ..
+//     } = init;
 
-    let quit = bot.quit.clone();
-    let mut string = String::new();
-    loop {
-        tokio::select! {
-            Ok(_) = stream.read_line(&mut string) => {
-                bot.handle(&string, responder.clone()).await?;
-                string.clear();
-            }
-            Some(data) = rx.recv() => {
-                stream.write_all(data.as_bytes()).await?;
-                stream.flush().await?;
-            }
-            _ = quit.notified() => break,
-            else => break
-        }
-    }
+//     let mut bot = Bot::<WriterResponder>::new(state, writer, commands, passives);
+//     let responder = WriterResponder::new(
+//         tx,
+//         noye::resolver::new(template::MemoryStore::new(
+//             noye::DEFAULT_TEMPLATES, //
+//             template::load_toml,
+//         ))?,
+//     );
 
-    Ok(())
-}
+//     let quit = bot.quit.clone();
+//     let mut string = String::new();
+//     loop {
+//         tokio::select! {
+//             Ok(_) = stream.read_line(&mut string) => {
+//                 bot.handle(&string, responder.clone()).await?;
+//                 string.clear();
+//             }
+//             Some(data) = rx.recv() => {
+//                 stream.write_all(data.as_bytes()).await?;
+//                 stream.flush().await?;
+//             }
+//             _ = quit.notified() => break,
+//             else => break
+//         }
+//     }
+
+//     Ok(())
+// }
