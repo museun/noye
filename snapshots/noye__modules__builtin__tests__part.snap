@@ -1,5 +1,0 @@
----
-source: src/modules/builtin.rs
-expression: "responses.get_reply::<responses::NotOwner>()"
----
-NotOwner

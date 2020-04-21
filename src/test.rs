@@ -119,9 +119,9 @@ fn resp_kind(response: Response) -> &'static str {
 }
 
 pub fn set_snapshot_path() {
-    // let mut settings = insta::Settings::new();
-    // settings.set_snapshot_path(get_snapshot_path());
-    // settings.bind_to_thread();
+    let mut settings = insta::Settings::new();
+    settings.set_snapshot_path(get_snapshot_path());
+    settings.bind_to_thread();
 }
 
 pub fn get_snapshot_path() -> std::path::PathBuf {

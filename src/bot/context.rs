@@ -93,7 +93,10 @@ impl Context<Message> {
 
         responder
             .reply(self.clone(), crate::responses::Builtin::NotOwner)
-            .await
+            .await?;
+
+        // This is needed to signal that this is an error
+        crate::util::dont_care()
     }
 
     pub fn get_links(&self) -> anyhow::Result<Vec<url::Url>> {
