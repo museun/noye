@@ -117,3 +117,9 @@ pub enum GDrive {
 pub enum Instagram {
     Title { title: String },
 }
+
+#[derive(Template, Debug, Clone, Serialize, Deserialize)]
+#[namespace("tempstore")]
+pub enum TempStore {
+    Link { link: String },
+}

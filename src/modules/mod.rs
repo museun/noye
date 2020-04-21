@@ -54,9 +54,12 @@ where
     add_external_ip(&mut init.state, &lookup_ip, listen_port).await?;
 
     let db = init.state.expect_get::<pictures::web::Db>()?.clone();
+    let temp = init.state.expect_get::<crate::web::TempStore>()?.clone();
 
+    use warp::Filter as _;
     // TODO abstract this out
-    tokio::spawn(warp::serve(pictures::web::lookup(db)).run(addr));
+    let routes = pictures::web::lookup(db).or(crate::web::temporary(temp));
+    tokio::spawn(warp::serve(routes).run(addr));
 
     Ok(())
 }

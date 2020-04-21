@@ -9,6 +9,7 @@ where
     init.commands.add("uptime", uptime)?;
     init.commands.add("restart", restart)?;
     init.commands.add("respawn", respawn)?;
+    init.commands.add("logs", get_logs)?;
 
     init.state.expect_insert(StartTime::default())
 }
@@ -35,6 +36,27 @@ pub async fn uptime<R: Responder>(context: Context, mut responder: R) -> Result 
         .expect_get::<StartTime>()?
         .as_readable_time();
     responder.say(context, Uptime::Uptime { uptime }).await
+}
+
+pub async fn get_logs<R: Responder>(context: Context, mut responder: R) -> Result {
+    let state = context.state.lock().await;
+    let temp = state.expect_get::<crate::web::TempStore>()?;
+    let log_file = state.expect_get::<crate::LogFile>()?;
+    let ExternalIp { address, port } = state.expect_get::<ExternalIp>()?.clone();
+
+    use rand::prelude::*;
+
+    let mut rng = rand::rngs::SmallRng::from_entropy();
+    let id = temp
+        .inner
+        .write()
+        .await
+        .insert_text_file(&mut rng, log_file.0.clone())
+        .await?;
+
+    let link = format!("http://{}:{}/t/{}", address, port, id);
+    let template = responses::TempStore::Link { link };
+    responder.say(context.clone(), template).await
 }
 
 pub async fn restart<R: Responder>(context: Context, mut responder: R) -> Result {

@@ -17,12 +17,13 @@ dependencies = [
 
 [[package]]
 name = "alto_logger"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b97ad9032c6a206c5f535ae4aeddbdbcdc9fc1969b2b2926b58adcb0a5a9848"
+checksum = "67f777c76cd1648a0c7f6bd226aa18981ea8eb42867f020efefb86202e83efe2"
 dependencies = [
  "log",
  "termcolor",
+ "time 0.2.10",
 ]
 
 [[package]]
@@ -547,7 +548,7 @@ dependencies = [
  "http",
  "mime",
  "sha-1",
- "time 0.1.42",
+ "time 0.1.43",
 ]
 
 [[package]]
@@ -642,9 +643,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "0.13.4"
+version = "0.13.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed6081100e960d9d74734659ffc9cc91daf1c0fc7aceb8eaa94ee1a3f5046f2e"
+checksum = "96816e1d921eca64d208a85aab4f7798455a8e34229ee5a88c935bdee1b78b14"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -658,7 +659,7 @@ dependencies = [
  "log",
  "net2",
  "pin-project",
- "time 0.1.42",
+ "time 0.1.43",
  "tokio",
  "tower-service",
  "want",
@@ -978,7 +979,7 @@ dependencies = [
  "serde_yaml",
  "simple_duration_parse",
  "template",
- "time 0.2.9",
+ "time 0.2.10",
  "tokio",
  "toml",
  "url",
@@ -1400,9 +1401,9 @@ checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
 
 [[package]]
 name = "regex"
-version = "1.3.6"
+version = "1.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f6946991529684867e47d86474e3a6d0c0ab9b82d5821e314b1ede31fa3a4b3"
+checksum = "a6020f034922e3194c711b82a627453881bc4682166cabb07134a10c26ba7692"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -1461,7 +1462,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "time 0.1.42",
+ "time 0.1.43",
  "tokio",
  "tokio-tls",
  "url",
@@ -1483,7 +1484,7 @@ dependencies = [
  "libsqlite3-sys",
  "lru-cache",
  "memchr",
- "time 0.1.42",
+ "time 0.1.43",
 ]
 
 [[package]]
@@ -1695,9 +1696,9 @@ dependencies = [
 
 [[package]]
 name = "standback"
-version = "0.2.2"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee531c64ad0f80d289504bd32fb047f42a9e957cda584276ab96eb587e9abac3"
+checksum = "6389164ce46e8a68e1b373787efcca3b6b6620bb50b12d4e8d14380838db316f"
 
 [[package]]
 name = "stdweb"
@@ -1880,19 +1881,19 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.1.42"
+version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db8dcfca086c1143c9270ac42a2bbd8a7ee477b78ac8e45b19abfb0cbede4b6f"
+checksum = "ca8a50ef2360fbd1eeb0ecd46795a87a19024eb4b53c5dc916ca1fd95fe62438"
 dependencies = [
  "libc",
- "redox_syscall",
  "winapi",
 ]
 
 [[package]]
 name = "time"
-version = "0.2.9"
-source = "git+https://github.com/time-rs/time?rev=ea187f3fb4263183f6901b8c949ab9ee257f85c1#ea187f3fb4263183f6901b8c949ab9ee257f85c1"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cacbd5ebf7b211db6d9500b8b033c20b6e333a68368a9e8d3a1d073bb1f0a12a"
 dependencies = [
  "cfg-if",
  "libc",
@@ -1907,7 +1908,8 @@ dependencies = [
 [[package]]
 name = "time-macros"
 version = "0.1.0"
-source = "git+https://github.com/time-rs/time?rev=ea187f3fb4263183f6901b8c949ab9ee257f85c1#ea187f3fb4263183f6901b8c949ab9ee257f85c1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ae9b6e9f095bc105e183e3cd493d72579be3181ad4004fceb01adbe9eecab2d"
 dependencies = [
  "proc-macro-hack",
  "time-macros-impl",
@@ -1915,12 +1917,14 @@ dependencies = [
 
 [[package]]
 name = "time-macros-impl"
-version = "0.1.0"
-source = "git+https://github.com/time-rs/time?rev=ea187f3fb4263183f6901b8c949ab9ee257f85c1#ea187f3fb4263183f6901b8c949ab9ee257f85c1"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5c3be1edfad6027c69f5491cf4cb310d1a71ecd6af742788c6ff8bced86b8fa"
 dependencies = [
  "proc-macro-hack",
  "proc-macro2 1.0.10",
  "quote 1.0.3",
+ "standback",
  "syn 1.0.17",
 ]
 
@@ -2240,9 +2244,9 @@ checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 
 [[package]]
 name = "winapi-util"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa515c5163a99cc82bab70fd3bfdd36d827be85de63737b40fcef2ce084a436e"
+checksum = "70ec6ce85bb158151cae5e5c87f95a8e97d2c0c4b001223f33a334e3ce5de178"
 dependencies = [
  "winapi",
 ]

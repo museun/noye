@@ -38,3 +38,6 @@ video = "[${size}] ${title} | ${width}x${height} · ${duration}. created at ${cr
 
 [instagram]
 title = "${title}"
+
+[tempstore]
+link = "${link}"

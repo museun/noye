@@ -43,3 +43,8 @@ mod http;
 
 #[cfg(test)]
 mod test;
+
+#[derive(Debug, Clone)]
+pub struct LogFile(pub std::path::PathBuf);
+
+pub mod web;

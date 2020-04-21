@@ -6,7 +6,16 @@ const CONFIG_LOCATION: &str = "noye.toml";
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     std::env::set_var("RUST_LOG", "noye=trace");
-    alto_logger::init(alto_logger::Options::default()).expect("init logger");
+
+    let opts = alto_logger::Options::default()
+        .with_time(alto_logger::options::TimeConfig::date_time_format("%c"));
+    let file = alto_logger::FileLogger::timestamp(opts.clone(), "noye.log")?;
+    let log_file = file.file_name().map(ToOwned::to_owned).unwrap();
+
+    let logger = alto_logger::MultiLogger::new()
+        .with(alto_logger::TermLogger::new(opts.clone())?)
+        .with(file);
+    alto_logger::init(logger).expect("init logger");
 
     let config = noye::Config::load(CONFIG_LOCATION).await?;
 
@@ -27,8 +36,15 @@ async fn main() -> anyhow::Result<()> {
     let mut stream = BufStream::new(TcpStream::connect(&address).await?);
 
     let mut init = noye::modules::ModuleInit::default();
+
     init.state
         .insert(noye::CachedConfig::new(config, CONFIG_LOCATION));
+    init.state.insert(noye::LogFile(log_file.into()));
+    // to configure this
+    let temp = noye::web::TempStore::default();
+    temp.start_culling();
+    init.state.insert(temp);
+
     noye::modules::initialize_modules(&mut init).await?;
     let noye::modules::ModuleInit {
         commands,
