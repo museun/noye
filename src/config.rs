@@ -122,6 +122,7 @@ pub struct Pictures {
     pub cooldown: String,
     pub mention_chance: f64,
     pub passive_chance: f64,
+    pub min_lines: usize,
     pub quiet_time: String,
     pub directories: HashMap<String, PicturesItem>,
 }

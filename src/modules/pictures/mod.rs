@@ -22,6 +22,7 @@ where
     init.state.expect_insert(web::Db::new(mapping))?;
     init.state.expect_insert(LastSent {
         instant: tokio::time::Instant::now(),
+        lines: 0,
     })?;
 
     init.commands.add("pictures", pictures)?;
@@ -118,6 +119,7 @@ pub async fn hear_passive<R: Responder>(context: Context, mut responder: R) -> R
         cooldown,
         mention_chance,
         passive_chance,
+        min_lines,
         quiet_time,
         ..
     } = context.config().await?.modules.pictures;
@@ -141,6 +143,7 @@ pub async fn hear_passive<R: Responder>(context: Context, mut responder: R) -> R
         (@inner $link:expr) => {{
             let _ = state.insert(LastSent {
                 instant: tokio::time::Instant::now(),
+                lines: 0,
             });
             return responder.say(context.clone(), $link).await;
         }};
@@ -153,7 +156,15 @@ pub async fn hear_passive<R: Responder>(context: Context, mut responder: R) -> R
         }
     }
 
-    let left = state.expect_get::<LastSent>()?.instant.elapsed();
+    let mut last = state.expect_get::<LastSent>()?.clone();
+    last.lines += 1;
+
+    if last.lines < min_lines {
+        let _ = state.insert(last);
+        return crate::util::dont_care();
+    }
+
+    let left = last.instant.elapsed();
     if left < tokio::time::Duration::from_secs(simple_duration_parse::parse_secs(&cooldown)?) {
         return crate::util::dont_care();
     }
@@ -185,6 +196,7 @@ pub async fn hear_passive<R: Responder>(context: Context, mut responder: R) -> R
 #[derive(Clone, Debug)]
 struct LastSent {
     instant: tokio::time::Instant,
+    lines: usize,
 }
 
 #[cfg(test)]
