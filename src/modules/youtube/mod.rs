@@ -102,6 +102,8 @@ pub fn make_resp_for_channel(channel: data::Item) -> responses::Youtube {
 }
 
 pub fn make_resp_for_video(video: data::Item, ts: Option<String>) -> responses::Youtube {
+    let ts = ts.map(|s| format!("?t={}", s));
+
     return match video.snippet.live_broadcast_content {
         data::LiveBroadcastContent::Live => for_live(video, ts.unwrap_or_default()),
         data::LiveBroadcastContent::Upcoming => for_upcoming(video),
