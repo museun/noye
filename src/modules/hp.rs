@@ -44,7 +44,7 @@ async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
             .await?;
     }
 
-    for (i, mc) in mcs.into_iter().enumerate().filter(|(i, mc)| mc.count > 0) {
+    for (i, mc) in mcs.into_iter().enumerate().filter(|(_i, mc)| mc.count > 0) {
         responder
             .say(
                 context.clone(),
