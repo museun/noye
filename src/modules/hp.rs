@@ -1,20 +1,14 @@
 use super::*;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::Mutex;
 
 pub(super) async fn initialize_module<R>(init: &mut ModuleInit<R>) -> Result
 where
     R: Responder + Send + 'static,
 {
-    init.state.expect_insert(Cache::default())?;
     init.commands.add("hp", get_info)?;
     Ok(())
 }
 
 async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
-    let state = context.state.lock().await;
-    let cache = state.expect_get_cloned::<Cache>()?;
-
     let id = match context.without_command() {
         Some(args) => args.trim().to_uppercase(),
         None => {
@@ -23,7 +17,7 @@ async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
         }
     };
 
-    let concert = cache.lookup(&id).await?;
+    let concert = lookup(&id).await?;
     let mcs = concert.sum_mcs();
     let totals = concert.sum_all();
 
@@ -49,10 +43,8 @@ async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
             )
             .await?;
     }
-    for (i, mc) in mcs.into_iter().enumerate() {
-        if mc.count == 0 {
-            continue;
-        }
+
+    for (i, mc) in mcs.into_iter().enumerate().filter(|(i, mc)| mc.count > 0) {
         responder
             .say(
                 context.clone(),
@@ -74,108 +66,92 @@ async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
     Ok(())
 }
 
-#[derive(Default)]
-struct Cache {
-    data: Arc<Mutex<HashMap<String, Arc<Concert>>>>,
-}
+async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
+    use select::predicate::*;
+    let client = crate::http::client::new_client();
+    let body = client
+        .get(&format!(
+            "http://www.helloproject.com/release/detail/{}",
+            id
+        ))
+        .send()
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
 
-impl Cache {
-    async fn lookup(&self, id: impl ToString + Send) -> anyhow::Result<Arc<Concert>> {
-        use select::predicate::*;
+    let doc = select::document::Document::from(body.as_str());
+    let root = match doc.find(Attr("id", "rd_right")).next() {
+        Some(root) => root,
+        None => anyhow::bail!("cannot find table"),
+    };
 
-        let mut data = self.data.lock().await;
-        let id = id.to_string();
-        if let Some(id) = data.get(&id) {
-            return Ok(id.clone());
+    let title = root
+        .find(Name("h2").descendant(Text))
+        .map(|s| s.text())
+        .next()
+        .unwrap();
+
+    let mut tracks = vec![];
+
+    let mut discs = 0;
+    for (disc, body) in root
+        .find(Class("typeB"))
+        .enumerate()
+        .map(|(i, body)| (i + 1, body))
+    {
+        discs += 1;
+        for tr in body.find(Name("tbody").descendant(Name("tr"))) {
+            let mut v = tr
+                .find(Name("td").and(Not(Class("hide_cell"))).descendant(Text))
+                .flat_map(|s| s.as_text());
+
+            let track = match v.next().and_then(|s| s.parse().ok()) {
+                Some(id) => id,
+                _ => continue,
+            };
+
+            let v = v.collect::<Vec<_>>();
+
+            let song = v
+                .iter()
+                .take_while(|k| !k.starts_with('\n'))
+                .map(|k| k.trim())
+                .collect::<String>();
+
+            let kind = if song.contains("MC") {
+                Kind::Mc
+            } else if song.contains("VTR") {
+                Kind::Vtr
+            } else {
+                Kind::Song(song)
+            };
+
+            let seconds = match v
+                .iter()
+                .skip_while(|k| !k.starts_with('\n'))
+                .map(|s| s.trim())
+                .map(parse_seconds)
+                .next()
+            {
+                Some(dur) => dur,
+                None => continue,
+            };
+
+            tracks.push(Track {
+                disc,
+                track,
+                seconds,
+                kind,
+            });
         }
-
-        let client = crate::http::client::new_client();
-        let body = client
-            .get(&format!(
-                "http://www.helloproject.com/release/detail/{}",
-                id
-            ))
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-
-        let doc = select::document::Document::from(body.as_str());
-        let root = match doc.find(Attr("id", "rd_right")).next() {
-            Some(root) => root,
-            None => anyhow::bail!("cannot find table"),
-        };
-
-        let title = root
-            .find(Name("h2").descendant(Text))
-            .map(|s| s.text())
-            .next()
-            .unwrap();
-
-        let mut tracks = vec![];
-
-        let mut discs = 0;
-        for (disc, body) in root
-            .find(Class("typeB"))
-            .enumerate()
-            .map(|(i, body)| (i + 1, body))
-        {
-            discs += 1;
-            for tr in body.find(Name("tbody").descendant(Name("tr"))) {
-                let mut v = tr
-                    .find(Name("td").and(Not(Class("hide_cell"))).descendant(Text))
-                    .flat_map(|s| s.as_text());
-
-                let track = match v.next().and_then(|s| s.parse().ok()) {
-                    Some(id) => id,
-                    _ => continue,
-                };
-
-                let v = v.collect::<Vec<_>>();
-
-                let song = v
-                    .iter()
-                    .take_while(|k| !k.starts_with('\n'))
-                    .map(|k| k.trim())
-                    .collect::<String>();
-
-                let kind = if song.contains("MC") {
-                    Kind::Mc
-                } else if song.contains("VTR") {
-                    Kind::Vtr
-                } else {
-                    Kind::Song(song)
-                };
-
-                let seconds = match v
-                    .iter()
-                    .skip_while(|k| !k.starts_with('\n'))
-                    .map(|s| s.trim())
-                    .map(parse_seconds)
-                    .next()
-                {
-                    Some(dur) => dur,
-                    None => continue,
-                };
-
-                tracks.push(Track {
-                    disc,
-                    track,
-                    seconds,
-                    kind,
-                });
-            }
-        }
-
-        let concert = Arc::new(Concert {
-            title,
-            discs,
-            tracks,
-        });
-        data.insert(id, concert.clone());
-        Ok(concert)
     }
+
+    Ok(Concert {
+        title,
+        discs,
+        tracks,
+    })
 }
 
 #[derive(Debug)]
@@ -184,6 +160,7 @@ struct Concert {
     discs: usize,
     tracks: Vec<Track>,
 }
+
 impl Concert {
     fn sum(&self, kinds: &[Kind]) -> Vec<Summary> {
         let kinds = kinds.iter().map(std::mem::discriminant).collect::<Vec<_>>();
