@@ -102,19 +102,17 @@ async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
     {
         discs += 1;
         for tr in body.find(Name("tbody").descendant(Name("tr"))) {
-            let mut v = tr
+            let mut elements = tr
                 .find(Name("td").and(Not(Class("hide_cell"))).descendant(Text))
                 .flat_map(|s| s.as_text());
 
-            let track = match v.next().and_then(|s| s.parse().ok()) {
+            let track = match elements.next().and_then(|s| s.parse().ok()) {
                 Some(id) => id,
                 _ => continue,
             };
 
-            let v = v.collect::<Vec<_>>();
-
-            let song = v
-                .iter()
+            let song = elements
+                .by_ref()
                 .take_while(|k| !k.starts_with('\n'))
                 .map(|k| k.trim())
                 .collect::<String>();
@@ -127,8 +125,7 @@ async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
                 Kind::Song(song)
             };
 
-            let seconds = match v
-                .iter()
+            let seconds = match elements
                 .skip_while(|k| !k.starts_with('\n'))
                 .map(|s| s.trim())
                 .map(parse_seconds)
