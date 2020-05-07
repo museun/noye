@@ -47,7 +47,7 @@ pub async fn hear_gdrive<R: Responder>(context: Context, responder: R) -> Result
 
                 let created = resp
                     .created_date
-                    .map(|dt| time::OffsetDateTime::now() - dt)
+                    .map(|dt| time::OffsetDateTime::now_utc() - dt)
                     .map(|t| t.as_readable_time())
                     .unwrap_or_else(|| "just now".into());
 

@@ -123,7 +123,7 @@ impl<'a> Channel<'a> {
                     ":link": link,
                     ":nick": nick,
                     ":room": &self.name,
-                    ":time": serde_json::to_vec(&time::OffsetDateTime::now()).unwrap(),
+                    ":time": serde_json::to_vec(&time::OffsetDateTime::now_utc()).unwrap(),
                     ":posts": 1,
                     ":ignored": ignored,
                 },
@@ -156,7 +156,7 @@ impl<'a> Channel<'a> {
                     ":link": link,
                     ":nick": nick,
                     ":room": &self.name,
-                    ":time": serde_json::to_vec(&time::OffsetDateTime::now()).unwrap(),
+                    ":time": serde_json::to_vec(&time::OffsetDateTime::now_utc()).unwrap(),
                     ":posts": old.posts + 1,
                     ":ignored": ignored,
                     ":old": &old.link

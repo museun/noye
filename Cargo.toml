@@ -5,7 +5,7 @@ authors = ["museun <museun@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-alto_logger           = { version = "0.3.2", features = ["time"] }
+alto_logger           = { version = "0.3.3", features = ["time"] }
 anyhow                = "1.0.28"
 futures               = { version = "0.3.4", default-features = false }
 headers               = "0.3.2"
@@ -18,11 +18,11 @@ reqwest               = { version = "0.10.4", default-features = false, features
 rusqlite              = { version = "0.23.1", features = ["bundled"] }
 select                = "0.4.3"
 serde                 = { version = "1.0.106", features = ["derive"] }
-serde_json            = "1.0.51"
+serde_json            = "1.0.52"
 simple_duration_parse = { git = "https://github.com/museun/simple_duration_parse" }
 template              = { git = "https://github.com/museun/template", features = ["derive", "toml"] }
-time                  = { version = "0.2.10", features = ["serde"] }
-tokio                 = { version = "0.2.19", features = ["macros", "rt-threaded", "net", "stream", "sync", "io-util", "time"] }
+time                  = { version = "0.2.15", features = ["serde"] }
+tokio                 = { version = "0.2.20", features = ["macros", "rt-threaded", "net", "stream", "sync", "io-util", "time"] }
 toml                  = "0.5.6"
 url                   = "2.1.1"
 walkdir               = "2.3.1"
@@ -31,11 +31,8 @@ warp                  = { version = "0.2.2", default-features = false }
 [dev-dependencies]
 httptest   = "0.13.1"
 insta      = { version = "0.16.0", features = ["redactions", "glob"] }
-tokio      = { version = "0.2.19", features = ["test-util"] }
+tokio      = { version = "0.2.20", features = ["test-util"] }
 serde_yaml = "0.8.11"
-
-[patch.crates-io]
-mio = { git = "https://github.com/museun/mio", branch = "winapi03" }
 
 [profile.dev]
 debug = 0

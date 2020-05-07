@@ -131,7 +131,7 @@ pub fn make_resp_for_video(video: data::Item, ts: Option<String>) -> responses::
                 .unwrap()
                 .scheduled_start_time
                 .and_then(|start| {
-                    (start - time::OffsetDateTime::now())
+                    (start - time::OffsetDateTime::now_utc())
                         .as_readable_time()
                         .into()
                 })

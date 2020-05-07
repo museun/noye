@@ -1,4 +1,3 @@
-#![allow(clippy::future_not_send)]
 pub static DEFAULT_TEMPLATES: &str = include_str!("../default_templates.toml");
 
 #[derive(Debug, Clone)]

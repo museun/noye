@@ -48,7 +48,7 @@ pub async fn repost_shame<R: Responder>(context: Context, mut responder: R) -> R
         .filter(|url| !channel.is_ignored(url.as_str()))
         .flat_map(|url| channel.insert_link(nick, url.as_str()))
     {
-        let time = time::OffsetDateTime::now() - updated.time;
+        let time = time::OffsetDateTime::now_utc() - updated.time;
         if time > grace {
             continue;
         }
