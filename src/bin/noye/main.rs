@@ -40,7 +40,8 @@ async fn main() -> anyhow::Result<()> {
     init.state
         .insert(noye::CachedConfig::new(config, CONFIG_LOCATION));
     init.state.insert(noye::LogFile(log_file));
-    // to configure this
+
+    // TODO configure this
     let temp = noye::http::server::TempStore::default();
     temp.start_culling();
     init.state.insert(temp);

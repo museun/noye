@@ -66,22 +66,40 @@ async fn get_info<R: Responder>(context: Context, mut responder: R) -> Result {
     Ok(())
 }
 
+async fn try_labels(id: impl std::fmt::Display + Send) -> anyhow::Result<String> {
+    const SITES: [&str; 2] = [
+        "http://www.helloproject.com/release/detail/",
+        "http://up-front-works.jp/release/detail/",
+    ];
+
+    let client = crate::http::client::new_client();
+    let mut body = None;
+    for site in &SITES {
+        let resp = client
+            .get(&format!("{}{}", site, id))
+            .send()
+            .await?
+            .error_for_status();
+
+        if let Ok(resp) = resp {
+            body.replace(resp.text().await?);
+            break;
+        }
+    }
+
+    body.ok_or_else(|| anyhow::anyhow!("cannot get {}", id))
+}
+
 async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
     use select::predicate::*;
-    let client = crate::http::client::new_client();
-    let body = client
-        .get(&format!(
-            "http://www.helloproject.com/release/detail/{}",
-            id
-        ))
-        .send()
-        .await?
-        .error_for_status()?
-        .text()
-        .await?;
+
+    let body = try_labels(id).await?;
 
     let doc = select::document::Document::from(body.as_str());
-    let root = match doc.find(Attr("id", "rd_right")).next() {
+    let root = match doc
+        .find(Or(Attr("id", "rd_right"), Attr("id", "right")))
+        .next()
+    {
         Some(root) => root,
         None => anyhow::bail!("cannot find table"),
     };
@@ -96,7 +114,7 @@ async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
 
     let mut discs = 0;
     for (disc, body) in root
-        .find(Class("typeB"))
+        .find(Or(Class("typeB"), Class("data2")))
         .enumerate()
         .map(|(i, body)| (i + 1, body))
     {
@@ -125,10 +143,9 @@ async fn lookup(id: impl std::fmt::Display + Send) -> anyhow::Result<Concert> {
                 Kind::Song(song)
             };
 
-            let seconds = match elements
-                .skip_while(|k| !k.starts_with('\n'))
-                .map(|s| s.trim())
-                .map(parse_seconds)
+            let seconds = match tr
+                .find(Or(Class("item03"), Class("columnC")))
+                .map(|s| parse_seconds(s.text().trim()))
                 .next()
             {
                 Some(dur) => dur,
