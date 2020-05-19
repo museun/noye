@@ -1,5 +1,6 @@
 use super::{parser::Parser, Command, Message, Prefix};
 
+#[derive(Debug)]
 pub struct RawMessage {
     pub prefix: Option<Prefix>,
     pub command: Command,

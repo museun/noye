@@ -36,6 +36,11 @@ impl<R: Responder + Send + 'static> Runner<R> {
 
         match msg.command {
             Command::Privmsg => {
+                if msg.data.is_none() {
+                    log::warn!("message was missing 'data': {:?}", msg);
+                    return Ok(());
+                }
+
                 let context = Context::new(
                     msg.into_message(),
                     context::ContextArgs {
