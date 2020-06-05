@@ -47,3 +47,7 @@ no_id_provided = "no id was provided"
 title = "${id} is: ${title}"
 total = "Total for disc ${num}: ${chapter_count} chapters for ${length}"
 talks = "MCs for disc ${num}: ${chapter_count} chapters for ${length}. (${chapters})"
+
+[gfycat]
+link_nsfw = "[nsfw] ${title}} | ${size}. ${width}x${height} @ ${framerate}fps | ${link} | ${meta}"
+link = "${title} | ${size}. ${width}x${height} @ ${framerate}fps | ${link} | ${meta}"

@@ -7,6 +7,7 @@ pub(self) use futures::prelude::*;
 
 mod builtin;
 mod gdrive;
+mod gfycat;
 mod hp;
 mod instagram;
 mod link_size;
@@ -45,6 +46,7 @@ where
     instagram::initialize_module(init).await?;
     pictures::initialize_module(init).await?;
     hp::initialize_module(init).await?;
+    gfycat::initialize_module(init).await?;
 
     let config::Web {
         listen_port,

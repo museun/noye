@@ -144,3 +144,27 @@ pub enum Concert {
         chapters: String,
     },
 }
+
+#[derive(Template, Debug, Clone, Serialize, Deserialize)]
+#[namespace("gfycat")]
+pub enum Gfycat {
+    LinkNsfw {
+        title: String,
+        size: String,
+        width: usize,
+        height: usize,
+        framerate: String,
+        link: String,
+        meta: String,
+    },
+
+    Link {
+        title: String,
+        size: String,
+        width: usize,
+        height: usize,
+        framerate: String,
+        link: String,
+        meta: String,
+    },
+}

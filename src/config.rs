@@ -90,6 +90,7 @@ pub struct Modules {
     pub youtube: Youtube,
     pub gdrive: GDrive,
     pub pictures: Pictures,
+    pub gfycat: Gfycat,
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -132,4 +133,9 @@ pub struct PicturesItem {
     pub directory: String,
     pub command: String,
     pub banned_channels: Vec<String>,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Gfycat {
+    pub api_key: String,
 }
